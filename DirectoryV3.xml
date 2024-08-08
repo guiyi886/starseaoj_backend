@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<trees>
+    <tree path="/src/main/java/com/yupi/starseaoj/annotation/AuthCheck.java" title="自定义身份注解"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/aop/AuthInterceptor.java" title="权限校验 AOP 切面"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/aop/LogInterceptor.java" title="请求响应日志 AOP 拦截器"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/annotation" title="注解"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/aop" title="aop切面"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/common" title="通用类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/common/BaseResponse.java" title="通用返回类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/common/DeleteRequest.java" title="删除请求"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/common/ErrorCode.java" title="自定义错误码"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/common/PageRequest.java" title="分页请求"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/common/ResultUtils.java" title="返回工具类"/>
+    <tree path="/sql/post_es_mapping.json" title="帖子表在 ES 中的建表语句"/>
+    <tree path="/sql/create_table.sql" title="数据库的初始化建库建表语句"/>
+    <tree path="/doc" title="md文档的图片"/>
+    <tree path="/src/main/resources/application.yml" title="配置文件"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/config" title="配置类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/config/CorsConfig.java" title="全局跨域配置"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/config/CosClientConfig.java" title="腾讯云对象存储客户端"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/config/JsonConfig.java" title="Spring MVC Json 配置"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/config/MyBatisPlusConfig.java" title="MyBatis Plus 配置类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/config/WxOpenConfig.java" title="微信开放平台配置"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/constant" title="常量类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/constant/CommonConstant.java" title="通用常量"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/constant/FileConstant.java" title="文件常量"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/constant/UserConstant.java" title="用户常量"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/controller" title="控制层 接收请求"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/controller/FileController.java" title="文件"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/controller/PostController.java" title="帖子"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/controller/PostFavourController.java" title="帖子收藏"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/controller/PostThumbController.java" title="帖子点赞"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/controller/UserController.java" title="用户"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/controller/WxMpController.java" title="微信公众号"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/esdao" title="类似 mybatis 的 mapper，用于操作 ES"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/exception" title="异常处理"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/exception/BusinessException.java" title="自定义异常类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/exception/GlobalExceptionHandler.java" title="全局异常处理器"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/exception/ThrowUtils.java" title="抛异常工具类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/generate" title="代码生成器"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/job/once" title="单次任务"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/job/cycle" title="循环任务"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/job" title="任务相关"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/job/cycle/IncSyncPostToEs.java" title="增量同步帖子到 es"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/job/once/FullSyncPostToEs.java" title="全量同步帖子到 es"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/manager" title="公用服务"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/service" title="服务层"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/mapper" title="数据访问层，用于操作数据库"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model" title="数据模型"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/entity" title="实体类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/enums" title="枚举值"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/dto" title="接收"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/vo" title="返回"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/service/impl" title="实现"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/utils" title="工具类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/wxmp" title="公众号相关"/>
+</trees>

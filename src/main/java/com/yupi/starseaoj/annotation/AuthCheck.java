@@ -8,14 +8,13 @@ import java.lang.annotation.Target;
 /**
  * 权限校验
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD) // 注解作用于方法上
+@Retention(RetentionPolicy.RUNTIME) // 注解在运行时可用
 public @interface AuthCheck {
 
     /**
      * 必须有某个角色
-     *
-     * @return
+     * 定义一个参数 mustRole，默认值为 ""。
      */
     String mustRole() default "";
 

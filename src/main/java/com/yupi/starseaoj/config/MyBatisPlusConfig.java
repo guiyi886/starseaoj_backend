@@ -8,24 +8,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * MyBatis Plus 配置
- *
- * @author https://github.com/liyupi
+ * MyBatis Plus 配置类
+ * <p>
+ * 该配置类用于配置 MyBatis Plus 的相关拦截器及 Mapper 扫描路径。
  */
 @Configuration
 @MapperScan("com.yupi.starseaoj.mapper")
 public class MyBatisPlusConfig {
 
     /**
-     * 拦截器配置
+     * 配置 MyBatis Plus 拦截器
+     * <p>
+     * 该方法配置并返回 MybatisPlusInterceptor 拦截器实例，主要用于分页处理。
      *
-     * @return
+     * @return MybatisPlusInterceptor 实例
      */
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        // 创建 MybatisPlusInterceptor 拦截器实例
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        // 分页插件
+        // 添加分页拦截器，指定数据库类型为 MySQL
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        // 返回配置好的拦截器实例
         return interceptor;
     }
 }

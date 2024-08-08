@@ -11,7 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 腾讯云对象存储客户端
+ * 腾讯云对象存储客户端配置类
+ * <p>
+ * 该类用于配置和初始化腾讯云对象存储（COS）的客户端。
+ * 配置属性通过 Spring Boot 的配置文件注入，以便灵活地管理和修改。
  */
 @Configuration
 @ConfigurationProperties(prefix = "cos.client")
@@ -38,6 +41,13 @@ public class CosClientConfig {
      */
     private String bucket;
 
+    /**
+     * 初始化并返回一个 COSClient 对象
+     * <p>
+     * 该方法配置并创建一个 COSClient 实例，用于与腾讯云对象存储服务进行交互。
+     *
+     * @return 已配置的 COSClient 实例
+     */
     @Bean
     public COSClient cosClient() {
         // 初始化用户身份信息(secretId, secretKey)
