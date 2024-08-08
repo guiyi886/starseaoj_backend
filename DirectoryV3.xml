@@ -54,4 +54,5 @@
     <tree path="/src/main/java/com/yupi/starseaoj/service/impl" title="实现"/>
     <tree path="/src/main/java/com/yupi/starseaoj/utils" title="工具类"/>
     <tree path="/src/main/java/com/yupi/starseaoj/wxmp" title="公众号相关"/>
+    <tree path="/photo" title="md文档图片"/>
 </trees>
