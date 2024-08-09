@@ -279,6 +279,8 @@ create table if not exists question_submit
 
 8. 编写枚举类。
 
+9. 利用Swagger测试接口。
+
 
 
 ### MyBatisX 插件代码生成

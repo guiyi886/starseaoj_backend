@@ -254,33 +254,33 @@ public class QuestionController {
     /**
      * 编辑（用户）
      *
-     * @param questionEditRequest
+     * @param questionUpdateRequest
      * @param request
      * @return
      */
     @PostMapping("/edit")
-    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
-        if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
+    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionUpdateRequest questionUpdateRequest, HttpServletRequest request) {
+        if (questionUpdateRequest == null || questionUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Question question = new Question();
-        BeanUtils.copyProperties(questionEditRequest, question);
-        List<String> tags = questionEditRequest.getTags();
+        BeanUtils.copyProperties(questionUpdateRequest, question);
+        List<String> tags = questionUpdateRequest.getTags();
         if (tags != null) {
             question.setTags(GSON.toJson(tags));
         }
-        List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
+        List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
         if (judgeCase != null) {
             question.setJudgeCase(GSON.toJson(judgeCase));
         }
-        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
+        JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
         if (judgeConfig != null) {
             question.setJudgeConfig(GSON.toJson(judgeConfig));
         }
         // 参数校验
         questionService.validQuestion(question, false);
         User loginUser = userService.getLoginUser(request);
-        long id = questionEditRequest.getId();
+        long id = questionUpdateRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
         ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
