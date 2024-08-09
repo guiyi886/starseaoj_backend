@@ -55,4 +55,10 @@
     <tree path="/src/main/java/com/yupi/starseaoj/utils" title="工具类"/>
     <tree path="/src/main/java/com/yupi/starseaoj/wxmp" title="公众号相关"/>
     <tree path="/photo" title="md文档图片"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/JudgeCase.java" title="题目用例 json"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/JudgeConfig.java" title="题目配置 json"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/QuestionAddRequest.java" title="创建请求"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/QuestionEditRequest.java" title="编辑请求"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/QuestionQueryRequest.java" title="查询请求"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/QuestionUpdateRequest.java" title="更新请求"/>
 </trees>

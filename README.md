@@ -84,9 +84,9 @@ Spring Cloud 微服务 、消息队列、多种设计模式
 
 ![Snipaste_2024-08-08_03-27-12](photo/Snipaste_2024-08-08_03-27-12.png)
 
-## 后端开发
 
-### 系统功能梳理
+
+## 系统功能梳理
 
 1. 用户模块
    i. 注册
@@ -103,9 +103,11 @@ Spring Cloud 微服务 、消息队列、多种设计模式
    iii. **自主实现** 代码沙箱（安全沙箱）
    iv. 开放接口（提供一个独立的新服务）
 
-### 库表设计
 
-#### 用户表
+
+## 库表设计
+
+### 用户表
 
 只有管理员才能发布和管理题目，普通用户只能看题
 
@@ -131,7 +133,7 @@ create table if not exists user
 
 
 
-#### 题目表
+### 题目表
 
 题目标题
 
@@ -191,7 +193,7 @@ create table if not exists question
 
 
 
-#### 题目提交表
+### 题目提交表
 
 judgeInfo（json 对象）
 
@@ -238,7 +240,7 @@ create table if not exists question_submit
 
 
 
-#### 数据库索引
+### 数据库索引
 
 什么情况下适合加索引？如何选择给哪个字段加索引？
 
@@ -252,5 +254,64 @@ create table if not exists question_submit
 
 
 
-### 后端接口开发
+## 后端接口开发
+
+### 后端开发流程
+
+1. 根据功能设计库表
+
+2. MyBatisX 插件自动生成对数据库基本的增删改查（entity、mapper、service），把代码从生成包中移到实际项目对应目录中。
+3. 实现实体类相关的 DTO、VO、枚举类（用于接受前端请求、或者业务间传递信息），注意数据脱敏，比如不能返回全部信息（如密码地址答案等信息），而只能返回部分信息。
+
+3. 编写 Controller 层，实现基本的增删改查和权限校验
+
+4. 给对应的 json 字段编写独立的类，以方便处理 json 字段中的某个字段，如 judgeConfig、judgeCase。
+
+   **什么情况下要加业务前缀？什么情况下不加？比如类名取judgeCase还是QuestionJudgeCase？**
+
+   加业务前缀的好处，防止多个表都有类似的类，产生冲突；不加的前提，因为可能这个类是多个业务之间共享的，能够复用的。
+
+5. 校验 Controller 层的代码，看看除了要调用的方法缺失外，还有无报错。
+
+6. 实现 Service 层的代码。
+
+7. 编写 QuestionVO 的 json和对象的相互转换的方法。
+
+8. 编写枚举类。
+
+
+
+### MyBatisX 插件代码生成
+
+![Snipaste_2024-08-10_04-11-41](photo/Snipaste_2024-08-10_04-11-41.png)
+
+![Snipaste_2024-08-10_04-12-28](photo/Snipaste_2024-08-10_04-12-28.png)
+
+
+
+为了防止用户按照 id 顺序爬取题目，把 id 的生成规则改为 ASSIGN_ID （雪花算法生成）而不是从 1 开始自增，示例代码如下：
+
+```java
+/**
+* id
+*/
+@TableId(type = IdType.ASSIGN_ID)
+private Long id;
+```
+
+
+
+## Bug 解决
+
+1. md文档上传到github后图片不显示
+
+   通过分析路径名知会将 "photo/Snipaste_2024-08-08_03-27-12.png" 的 ’/' 识别为 %5c ，导致图片名为"photo%5cSnipaste_2024-08-08_03-27-12.png" ，故而找不到图片。
+
+   解决方法：将 / 改为 \ 即可。
+
+   ps. 在本地电脑时两个都可以正确识别，且默认为 / 
+
+   
+
+2. 
 
