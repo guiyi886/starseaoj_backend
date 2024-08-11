@@ -565,7 +565,150 @@ private Long id;
 
 
 
+### 判题服务开发
 
+定义单独的 judgeService 类，而不是把所有判题相关的代码写到 questionSubmitService 里，有利于后续的模块抽离、微服务改造。
+
+
+
+#### 判题服务业务流程
+
+1. 传入题目的提交 id，获取到对应的题目、提交信息（包含代码、编程语言等）
+
+2. 如果题目提交状态不为 “待判题”，就不往下执行
+
+3. 更改判题（题目提交）的状态为 “判题中”，防止重复执行，也能让用户即时看到状态
+
+4. 调用沙箱，获取到执行结果
+
+5. 根据沙箱的执行结果，设置题目的判题状态和信息
+
+   **判断逻辑：**
+
+   （1）先判断沙箱执行的结果输出数量是否和预期输出数量相等
+
+   （2）依次判断每一项输出和预期输出是否相等
+
+   （3）判题题目的限制是否符合要求
+
+   （4）可能还有其他的异常情况
+
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/11 下午6:21:32
+ * @ClassName com.yupi.starseaoj.judge.JudgeServiceImpl
+ * @function -->
+ */
+@Service // 和 @Component 没有实际区别，仅做语义区分，表示这是服务层
+public class JudgeServiceImpl implements JudgeService {
+
+    @Resource
+    private QuestionService questionService;
+
+    @Resource
+    private QuestionSubmitService questionSubmitService;
+
+    /**
+     * 从配置文件中获取type，设置默认值为thirdParty
+     */
+    @Value("${codesandbox.type:thirdParty}")
+    private String type;
+
+    @Override
+    public QuestionSubmitVO doJudge(long questionSubmitId) {
+        // 1.传入题目的提交 id，获取到对应的题目、提交信息（包含代码、编程语言等）
+        QuestionSubmit questionSubmit = questionSubmitService.getById(questionSubmitId);
+        if (questionSubmit == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "提交信息不存在");
+        }
+        Long questionId = questionSubmit.getQuestionId();
+        Question question = questionService.getById(questionId);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "题目不存在");
+        }
+
+        // 2.如果题目提交状态不为 “待判题”，就不往下执行
+        if (!questionSubmit.getStatus().equals(QuestionSubmitStatusEnum.WAITING.getValue())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "题目正在判题中");
+        }
+
+        // 3.更改判题（题目提交）的状态为 “判题中”，防止重复执行，也能让用户即时看到状态
+        QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
+        questionSubmitUpdate.setId(questionId);
+        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
+        boolean update = questionSubmitService.updateById(questionSubmitUpdate);
+        if (!update) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新失败");
+        }
+
+        // 4.调用沙箱，获取到执行结果
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+        // 使用codeSandbox创建代理类对象重新赋值给codeSandbox
+        codeSandbox = new CodeSandboxProxy(codeSandbox);
+        String language = questionSubmit.getLanguage();
+        String code = questionSubmit.getCode();
+
+        // 获取输入样例
+        String judgeCaseStr = question.getJudgeCase();
+        List<JudgeCase> judgeCaseList = JSONUtil.toList(judgeCaseStr, JudgeCase.class);
+        List<String> inputList = judgeCaseList.stream()
+                .map(JudgeCase::getInput)
+                .collect(Collectors.toList());
+
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        List<String> outputList = executeCodeResponse.getOutputList();
+
+        // 5.根据沙箱的执行结果，设置题目的判题状态和信息
+        JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.WAITING;
+        // 先判断沙箱执行的结果输出数量是否和预期输出数量相等
+        if (outputList.size() != inputList.size()) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
+            return null;
+        }
+        // 依次判断每一项输出和预期输出是否相等
+        for (int i = 0; i < outputList.size(); i++) {
+            JudgeCase judgeCase = judgeCaseList.get(i);
+            if (judgeCase.getOutput().equals(outputList.get(i))) {
+                judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
+                return null;
+            }
+        }
+        // 判题题目的限制是否符合要求
+        JudgeInfo judgeInfo = executeCodeResponse.getJudgeInfo();
+        Long memory = judgeInfo.getMemory();
+        Long time = judgeInfo.getTime();
+        String judgeConfigStr = question.getJudgeConfig();
+        JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
+        Long needTimeLimit = judgeConfig.getTimeLimit();
+        Long needMemoryLimit = judgeConfig.getMemoryLimit();
+        if (memory > needMemoryLimit) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
+            return null;
+        }
+        if (time > needTimeLimit) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
+            return null;
+        }
+        return null;
+    }
+}
+```
+
+第三步之所以创建新的QuestionSubmit对象而不是使用第一步的对象，好处如下：
+
+（1）最小化更新字段：确保只更新需要的字段，避免不必要的数据变动。
+
+（2）保护原始数据：保留第一步中获取的对象的完整性。如果在后续逻辑中还需要使用原始的数据，可以保证该对象没有被修改。
+
+（3）提高代码的可读性和维护性：开发者看到新建的对象时，可以明确地知道这个对象是专门用于更新操作的，而不会影响其他逻辑。
+
+（4）防止不必要的数据加载：如果在 `updateById` 时使用原始对象，可能会携带一些关联的数据，这些数据可能并不需要被更新。而使用新对象只包含需要更新的字段，可以减少数据传输的开销。
 
 
 
