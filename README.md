@@ -700,7 +700,7 @@ public class JudgeServiceImpl implements JudgeService {
 }
 ```
 
-第三步之所以创建新的QuestionSubmit对象而不是使用第一步的对象，好处如下：
+第三步之所以**创建新的QuestionSubmit对象而不是使用第一步的对象**，好处如下：
 
 （1）最小化更新字段：确保只更新需要的字段，避免不必要的数据变动。
 
@@ -719,6 +719,104 @@ public class JudgeServiceImpl implements JudgeService {
 对此可以采用策略模式，针对不同的情况，定义独立的策略，便于分别修改策略和维护。
 
 
+
+实现步骤如下：
+
+1. 定义判题策略接口，让代码更加通用化：
+
+   ```java
+   /**
+    * @author guiyi
+    * @Date 2024/8/11 下午8:09:28
+    * @ClassName com.yupi.starseaoj.judge.strategy.JudgeStrategy
+    * @function --> 判题策略
+    */
+   public interface JudgeStrategy {
+       /**
+        * 执行判题
+        *
+        * @param judgeContext
+        * @return
+        */
+       JudgeInfo doJudge(JudgeContext judgeContext);
+   }
+   ```
+
+
+
+2. 定义判题上下文对象，用于定义在策略中传递的参数（相当于 DTO）：
+
+   ```java
+   /**
+    * @author guiyi
+    * @Date 2024/8/11 下午11:49:50
+    * @ClassName com.yupi.starseaoj.judge.strategy.JudgeContext
+    * @function --> 上下文-策略参数传递
+    */
+   @Data
+   public class JudgeContext {
+       private JudgeInfo judgeInfo;
+   
+       private List<String> inputList;
+   
+       private List<String> outputList;
+   
+       private Question question;
+   
+       private List<JudgeCase> judgeCaseList;
+   
+       private QuestionSubmit questionSubmit;
+   }
+   ```
+
+
+
+3. 创建默认策略类DefaultJudgeStrategy，实现JudgeStrategy接口，将JudgeServiceImpl类中的判题策略部分搬到doJudge方法中。
+
+   
+
+4. 再新增一种判题策略类JavaLanguageJudgeStrategy，可以通过 if ... else ... 的方式选择使用哪种策略。但是，如果选择某种判题策略的过程比较复杂，都写在调用判题服务的代码中会有大量 if ... else ...，所以最好单独编写一个判断策略的类。
+
+   ```java
+   JudgeStrategy judgeStrategy = new DefaultJudgeStrategy();
+   if (language.equals("java")) {
+       judgeStrategy = new JavaLanguageJudgeStrategy();
+   }
+   JudgeInfo judgeInfo = judgeStrategy.doJudge(judgeContext);
+   ```
+
+
+
+5. 定义 JudgeManager，目的是尽量简化对判题功能的调用，**让调用方写最少的代码、调用最简单**。对于**判题策略的选取，移到 JudgeManager 里**处理。
+
+   ```java
+   /**
+    * @author guiyi
+    * @Date 2024/8/12 上午12:28:28
+    * @ClassName com.yupi.starseaoj.judge.JudgeManager
+    * @function --> 判题管理（简化调用）
+    */
+   @Service
+   public class JudgeManager {
+       /**
+        * 执行判题
+        *
+        * @param judgeContext
+        * @return
+        */
+       JudgeInfo doJudge(JudgeContext judgeContext) {
+           QuestionSubmit questionSubmit = judgeContext.getQuestionSubmit();
+           String language = questionSubmit.getLanguage();
+   
+           JudgeStrategy judgeStrategy = new DefaultJudgeStrategy();
+           if ("java".equals(language)) {
+               judgeStrategy = new JavaLanguageJudgeStrategy();
+           }
+   
+           return judgeStrategy.doJudge(judgeContext);
+       }
+   }
+   ```
 
 
 
