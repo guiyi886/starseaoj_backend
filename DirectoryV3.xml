@@ -69,4 +69,5 @@
           title="判题机响应参数"/>
     <tree path="/src/main/java/com/yupi/starseaoj/judge" title="判题机模块"/>
     <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox" title="代码沙箱"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/CodeSandboxFactory.java" title="代码沙箱工厂"/>
 </trees>

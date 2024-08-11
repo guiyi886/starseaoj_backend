@@ -377,9 +377,64 @@ private Long id;
 
    当前存在**问题**：把 new 某个沙箱的代码写死了，如果后面项目要改用其他沙箱，可能要改很多地方的代码。
 
-4. 使用**工厂模式**，根据用户传入的字符串参数（沙箱类别），来生成对应的代码沙箱实现类。
+4. 使用**工厂模式优化**，根据用户传入的字符串参数（沙箱类别），来生成对应的代码沙箱实现类。
 
-   
+   ```java
+   /**
+    * @author guiyi
+    * @Date 2024/8/11 下午4:30:50
+    * @ClassName com.yupi.starseaoj.judge.codesandbox.CodeSandboxFactory
+    * @function --> 代码沙箱工厂（根据字符串参数创建指定的代码沙箱示例）
+    */
+   public class CodeSandboxFactory {
+       /**
+        * 创建代码沙箱
+        *
+        * @param type
+        * @return
+        */
+       public static CodeSandbox newInstance(String type) {
+           switch (type) {
+               case "example":
+                   return new ExampleCodeSandbox();
+               case "remote":
+                   return new RemoteCodeSandbox();
+               case "thirdParty":
+                   return new ThirdPartyCodeSandbox();
+               default:
+                   return new ExampleCodeSandbox();
+           }
+       }
+   }
+   ```
+
+   >扩展思路：如果确定代码沙箱示例不会出现线程安全问题、可复用，那么可以使用单例工厂模式
+
+修改单元测试验证静态工厂
+
+```java
+/**
+ * 测试静态工厂创建代码沙箱
+ */
+@Test
+void executeCodeFactory() {
+    List<String> codeSandboxTypeList = Arrays.asList("example", "remote", "thirdParty");
+    for (String type : codeSandboxTypeList) {
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+        String code = "int main(){}";
+        String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+        List<String> inputList = Arrays.asList("1 2", "3 4");
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+    }
+}
+```
+
+
 
 
 

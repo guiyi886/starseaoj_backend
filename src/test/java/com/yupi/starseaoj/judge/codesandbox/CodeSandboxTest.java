@@ -37,4 +37,24 @@ class CodeSandboxTest {
         ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
         Assertions.assertNotNull(executeCodeResponse);
     }
+
+    /**
+     * 测试静态工厂创建代码沙箱，使用构造器模式赋值，判断代码沙箱返回是否为空
+     */
+    @Test
+    void executeCodeFactory() {
+        List<String> codeSandboxTypeList = Arrays.asList("example", "remote", "thirdParty");
+        for (String type : codeSandboxTypeList) {
+            CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+            String code = "int main(){}";
+            String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+            List<String> inputList = Arrays.asList("1 2", "3 4");
+            ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                    .code(code)
+                    .language(language)
+                    .inputList(inputList)
+                    .build();
+            ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        }
+    }
 }
