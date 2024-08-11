@@ -39,21 +39,20 @@
 
 
 ### 功能模块
-
-1. 题目模块
+1. 用户模块
+   1. 注册
+   2. 登录
+2. 题目模块
    1. 创建题目（管理员）
    2. 删除题目（管理员）
    3. 修改题目（管理员）
    4. 搜索题目（用户）
    5. 在线做题
    6. 提交题目代码
-2. 用户模块
-   1. 注册
-   2. 登录
 3. 判题模块
    1. 提交判题（结果是否正确与错误）
    2. 错误处理（内存溢出、安全性、超时）
-   3. **自主实现** 代码沙箱（安全沙箱）
+   3. **自主实现代码沙箱**（安全沙箱）
    4. 开放接口（提供一个独立的新服务）
 
 
@@ -70,8 +69,6 @@
 
 ### 技术点
 
-前端：Vue3、Arco Design 组件库、在线代码编辑器、在线文档浏览
-
 Java 进程控制、Java 安全管理器、部分 JVM 知识点
 
 虚拟机（云服务器）、Docker（代码沙箱实现）
@@ -86,26 +83,7 @@ Spring Cloud 微服务 、消息队列、多种设计模式
 
 
 
-## 二、系统功能梳理
-
-1. 用户模块
-   i. 注册
-   ii. 登录
-2. 题目模块
-   i. 创建题目（管理员）
-   ii. 删除题目（管理员）
-   iii. 修改题目（管理员）
-   iv. 搜索题目（用户）
-   v. 在线做题（题目详情页）
-3. 判题模块
-   i. 提交判题（结果是否正确与错误）
-   ii. 错误处理（内存溢出、安全性、超时）
-   iii. **自主实现** 代码沙箱（安全沙箱）
-   iv. 开放接口（提供一个独立的新服务）
-
-
-
-## 三、库表设计
+## 二、库表设计
 
 ### 用户表
 
@@ -254,16 +232,16 @@ create table if not exists question_submit
 
 
 
-## 四、后端接口开发
+## 三、后端接口开发
 
 ### 后端开发流程
 
 1. 根据功能设计库表
 
 2. MyBatisX 插件自动生成对数据库基本的增删改查（entity、mapper、service），把代码从生成包中移到实际项目对应目录中。
-3. 实现实体类相关的 DTO、VO、枚举类（用于接受前端请求、或者业务间传递信息），注意数据脱敏，比如不能返回全部信息（如密码地址答案等信息），而只能返回部分信息。
+3. 实现实体类相关的 DTO、VO、枚举类（用于接受前端请求、或者业务间传递信息），注意**数据脱敏**，比如不能返回全部信息（如密码地址答案等信息），而只能返回部分信息。
 
-3. 编写 Controller 层，实现基本的增删改查和权限校验
+3. 编写 Controller 层，实现基本的增删改查和权限校验。
 
 4. 给对应的 json 字段编写独立的类，以方便处理 json 字段中的某个字段，如 judgeConfig、judgeCase。
 
@@ -279,7 +257,7 @@ create table if not exists question_submit
 
 8. 编写枚举类。
 
-9. 利用Swagger测试
+9. 利用**Swagger测试接口**。
 
 
 
@@ -291,7 +269,7 @@ create table if not exists question_submit
 
 
 
-为了防止用户按照 id 顺序爬取题目，把 id 的生成规则改为 ASSIGN_ID （雪花算法生成）而不是从 1 开始自增，示例代码如下：
+为了**防止**用户按照 id 顺序**爬取题目**，把 id 的生成规则改为 ASSIGN_ID （雪花算法生成）而不是从 1 开始自增，示例代码如下：
 
 ```java
 /**
@@ -303,7 +281,7 @@ private Long id;
 
 
 
-## 五、判题机架构
+## 四、判题机架构
 
 ### 判题模块和代码沙箱的关系
 
@@ -311,7 +289,7 @@ private Long id;
 
 代码沙箱：只负责接受代码和输入，返回编译运行的结果，不负责判题（可以作为独立的项目 / 服务，提供给其他的需要执行代码的项目去使用）
 
-这两个模块完全解耦：
+这两个模块**完全解耦**：
 
 ![Snipaste_2024-08-11_15-28-37](photo/Snipaste_2024-08-11_15-28-37.png)
 
@@ -341,6 +319,8 @@ private Long id;
 
    扩展思路：增加一个查看代码沙箱状态的接口。
 
+   
+
 2. 定义多种不同的代码沙箱实现。
 
    示例代码沙箱：仅为了跑通业务流程
@@ -349,7 +329,9 @@ private Long id;
 
    第三方代码沙箱：调用网上现成的代码沙箱，https://github.com/criyle/go-judge
 
-3. 编写单元测试，验证单个代码沙箱的执行
+   
+
+3. 编写**单元测试**，验证单个代码沙箱的执行
 
    ```java
    @SpringBootTest
@@ -377,7 +359,9 @@ private Long id;
 
    当前存在**问题**：把 new 某个沙箱的代码写死了，如果后面项目要改用其他沙箱，可能要改很多地方的代码。
 
-4. 使用**工厂模式优化**，根据用户传入的字符串参数（沙箱类别），来生成对应的代码沙箱实现类。
+   
+
+4. 使用**工厂模式优化**，根据用户传入的字符串参数（沙箱类别），来生成对应的代码沙箱实现类，**提高通用性**。
 
    ```java
    /**
@@ -410,31 +394,49 @@ private Long id;
 
    >扩展思路：如果确定代码沙箱示例不会出现线程安全问题、可复用，那么可以使用单例工厂模式
 
-修改单元测试验证静态工厂
+   修改单元测试验证静态工厂
 
-```java
-/**
- * 测试静态工厂创建代码沙箱
- */
-@Test
-void executeCodeFactory() {
-    List<String> codeSandboxTypeList = Arrays.asList("example", "remote", "thirdParty");
-    for (String type : codeSandboxTypeList) {
-        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
-        String code = "int main(){}";
-        String language = QuestionSubmitLanguageEnum.JAVA.getValue();
-        List<String> inputList = Arrays.asList("1 2", "3 4");
-        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
-                .code(code)
-                .language(language)
-                .inputList(inputList)
-                .build();
-        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+    ```java
+    /**
+     * 测试静态工厂创建代码沙箱
+     */
+    @Test
+    void executeCodeFactory() {
+        List<String> codeSandboxTypeList = Arrays.asList("example", "remote", "thirdParty");
+        for (String type : codeSandboxTypeList) {
+            CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+            String code = "int main(){}";
+            String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+            List<String> inputList = Arrays.asList("1 2", "3 4");
+            ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                    .code(code)
+                    .language(language)
+                    .inputList(inputList)
+                    .build();
+            ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        }
     }
-}
-```
+    ```
 
 
+
+
+5. 参数配置化，把项目中的一些可以自定义的选项或字符串，写到配置文件中。这样其他开发者只需要改配置文件，而不需要去看项目代码，就能够自定义使用项目的更多功能。
+
+   application.yml 配置文件中指定变量：
+
+   ```yaml
+   # 代码沙箱配置
+   codesandbox:
+     type: example
+   ```
+
+   在 Spring 的 Bean 中通过 @Value 注解读取，:thirdParty是设置默认值为thirdParty：
+
+   ```java
+   @Value("${codesandbox.type:thirdParty}")
+   private String type;
+   ```
 
 
 
@@ -466,6 +468,10 @@ ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
     .inputList(inputList)
     .build();
 ```
+
+
+
+
 
 
 

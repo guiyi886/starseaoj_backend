@@ -99,3 +99,6 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.yupi.starseaoj.controller
+# 代码沙箱配置
+codesandbox:
+  type: example

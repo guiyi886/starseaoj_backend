@@ -6,6 +6,7 @@ import com.yupi.starseaoj.judge.codesandbox.model.ExecuteCodeResponse;
 import com.yupi.starseaoj.model.enums.QuestionSubmitLanguageEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
@@ -19,6 +20,12 @@ import java.util.List;
  */
 @SpringBootTest
 class CodeSandboxTest {
+
+    /**
+     * 从配置文件中获取type，设置默认值为thirdParty
+     */
+    @Value("${codesandbox.type:thirdParty}")
+    private String type;
 
     /**
      * 测试代码沙箱，使用构造器模式赋值，判断代码沙箱返回是否为空
@@ -56,5 +63,23 @@ class CodeSandboxTest {
                     .build();
             ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
         }
+    }
+
+    /**
+     * 从配置文件中获取type后使用静态工厂创建，测试代码沙箱，使用构造器模式赋值，判断代码沙箱返回是否为空
+     */
+    @Test
+    void executeCodeSetting() {
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+        String code = "int main(){}";
+        String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+        List<String> inputList = Arrays.asList("1 2", "3 4");
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        Assertions.assertNotNull(executeCodeResponse);
     }
 }
