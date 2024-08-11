@@ -70,4 +70,11 @@
     <tree path="/src/main/java/com/yupi/starseaoj/judge" title="判题机模块"/>
     <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox" title="代码沙箱"/>
     <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/CodeSandboxFactory.java" title="代码沙箱工厂"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/impl/ExampleCodeSandbox.java" title="示例代码沙箱"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/impl/RemoteCodeSandbox.java"
+          title="远程代码沙箱" extension="" presentableText="" tooltipTitle="" icon="" textColor="" backgroundColor=""/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/impl/ThirdPartyCodeSandbox.java"
+          title="第三方代码沙箱"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/CodeSandboxProxy.java" title="代码沙箱代理类"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/JudgeService.java" title="判题服务"/>
 </trees>

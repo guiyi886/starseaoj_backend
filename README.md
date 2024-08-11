@@ -331,6 +331,37 @@ private Long id;
 
    
 
+   #### 对象赋值优化 - 构造器模式 - Lombok Builder 注解
+
+   （1）实体类加上 @Builder 等注解：
+
+   ```java
+   @Data
+   @Builder
+   @NoArgsConstructor
+   @AllArgsConstructor
+   public class ExecuteCodeRequest {
+   
+       private List<String> inputList;
+   
+       private String code;
+   
+       private String language;
+   }
+   ```
+
+   （2）可以使用链式的方式更方便地给对象赋值：
+
+   ```java
+   ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+       .code(code)
+       .language(language)
+       .inputList(inputList)
+       .build();
+   ```
+
+   
+
 3. 编写**单元测试**，验证单个代码沙箱的执行
 
    ```java
@@ -440,34 +471,99 @@ private Long id;
 
 
 
-### 对象赋值优化 - 构造器模式 - Lombok Builder 注解
+6. 代码沙箱能力增强 - **代理模式优化**
 
-1. 实体类加上 @Builder 等注解：
+   比如：我们需要在调用代码沙箱前，输出请求参数**日志**；在代码沙箱调用后，输出响应结果日志，便于管理员去分析。
 
-```java
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ExecuteCodeRequest {
+   每个代码沙箱类都写一遍 log.info？难道每次调用代码沙箱前后都执行 log？
 
-    private List<String> inputList;
+   使用**代理模式**，提供一个 Proxy，来增强代码沙箱的能力（代理模式的作用就是增强能力）
 
-    private String code;
+   
 
-    private String language;
-}
-```
+   原本：需要用户自己去调用多次
 
-2. 可以使用链式的方式更方便地给对象赋值：
+   ![Snipaste_2024-08-11_17-24-28](photo/Snipaste_2024-08-11_17-24-28.png)
 
-```java
-ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
-    .code(code)
-    .language(language)
-    .inputList(inputList)
-    .build();
-```
+   
+
+   使用代理后：不仅不用改变原本的代码沙箱实现类，而且对调用者来说，调用方式几乎没有改变，也不需要在每个调用沙箱的地方去写统计代码。
+
+   ![Snipaste_2024-08-11_17-24-33](photo/Snipaste_2024-08-11_17-24-33.png)
+
+   
+
+   代理模式的实现原理：
+
+   1. 实现被代理的接口
+   2. 通过构造函数接受一个被代理的接口实现类
+   3. 调用被代理的接口实现类，在调用前后增加对应的操作
+
+   ```java
+   /**
+    * @author guiyi
+    * @Date 2024/8/11 下午5:30:46
+    * @ClassName com.yupi.starseaoj.judge.codesandbox.CodeSandboxProxy
+    * @function --> 代码沙箱代理类
+    */
+   @Slf4j
+   @AllArgsConstructor
+   public class CodeSandboxProxy implements CodeSandbox {
+   
+       private final CodeSandbox codeSandbox;
+   
+       @Override
+       public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+           log.info("代码沙箱请求参数：{}", executeCodeRequest.toString());
+           ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+           log.info("代码沙箱响应结果：{}", executeCodeResponse.toString());
+           return executeCodeResponse;
+       }
+   }
+   ```
+
+   使用方式：
+    ```
+    CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+    // 使用codeSandbox创建代理类对象重新赋值给codeSandbox
+    codeSandbox = new CodeSandboxProxy(codeSandbox);
+    ```
+
+
+
+7. 实现示例的代码沙箱
+
+   ```java
+   /**
+    * @author guiyi
+    * @Date 2024/8/11 下午4:04:24
+    * @ClassName com.yupi.starseaoj.judge.codesandbox.impl.CodeSandboxImpl
+    * @function --> 示例代码沙箱（仅为了跑通业务流程）
+    */
+   public class ExampleCodeSandbox implements CodeSandbox {
+       @Override
+       public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+           List<String> inputList = executeCodeRequest.getInputList();
+   
+           // 使用executeCodeResponse.allset快速生成set带阿米
+           ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
+           executeCodeResponse.setOutputList(inputList);
+           executeCodeResponse.setMessage("测试执行成功");
+           executeCodeResponse.setStatus(QuestionSubmitStatusEnum.SUCCEED.getValue());
+   
+           JudgeInfo judgeInfo = new JudgeInfo();
+           judgeInfo.setMessage(JudgeInfoMessageEnum.ACCEPTED.getText());
+           judgeInfo.setMemory(100L);
+           judgeInfo.setTime(100L);
+   
+           executeCodeResponse.setJudgeInfo(judgeInfo);
+   
+           return executeCodeResponse;
+       }
+   }
+   ```
+
+
 
 
 

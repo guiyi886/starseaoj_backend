@@ -82,4 +82,25 @@ class CodeSandboxTest {
         ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
         Assertions.assertNotNull(executeCodeResponse);
     }
+
+    /**
+     * 测试代码沙箱代理类
+     */
+    @Test
+    void executeCodeProxy() {
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+        // 使用codeSandbox创建代理类对象重新赋值给codeSandbox
+        codeSandbox = new CodeSandboxProxy(codeSandbox);
+
+        String code = "int main(){}";
+        String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+        List<String> inputList = Arrays.asList("1 2", "3 4");
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        Assertions.assertNotNull(executeCodeResponse);
+    }
 }
