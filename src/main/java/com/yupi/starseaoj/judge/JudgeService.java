@@ -1,6 +1,6 @@
 package com.yupi.starseaoj.judge;
 
-import com.yupi.starseaoj.model.vo.QuestionSubmitVO;
+import com.yupi.starseaoj.model.entity.QuestionSubmit;
 
 /**
  * @author guiyi
@@ -15,5 +15,5 @@ public interface JudgeService {
      * @param questionSubmitId
      * @return
      */
-    QuestionSubmitVO doJudge(long questionSubmitId);
+    QuestionSubmit doJudge(long questionSubmitId);
 }

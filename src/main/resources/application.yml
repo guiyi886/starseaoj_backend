@@ -43,7 +43,7 @@ spring:
       max-file-size: 10MB
 server:
   address: localhost
-  port: 8121
+  port: 8101
   servlet:
     context-path: /api
     # cookie 30 天过期

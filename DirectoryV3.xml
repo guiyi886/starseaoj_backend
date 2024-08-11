@@ -77,4 +77,9 @@
           title="第三方代码沙箱"/>
     <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/CodeSandboxProxy.java" title="代码沙箱代理类"/>
     <tree path="/src/main/java/com/yupi/starseaoj/judge/JudgeService.java" title="判题服务"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/strategy/JudgeStrategy.java" title="判题策略"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/strategy/JudgeContext.java" title="上下文-策略参数传递"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/strategy/DefaultJudgeStrategy.java" title="默认判题策略"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/strategy/JavaLanguageJudgeStrategy.java"
+          title="java程序判题策略"/>
 </trees>

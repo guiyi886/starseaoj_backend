@@ -1,6 +1,7 @@
 package com.yupi.starseaoj.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * 通过该配置，可以允许来自不同源的请求访问服务器资源，从而实现跨域请求。
  */
 @Configuration
+@EnableAsync
 public class CorsConfig implements WebMvcConfigurer {
 
     /**
