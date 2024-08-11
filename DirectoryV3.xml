@@ -61,4 +61,12 @@
     <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/QuestionEditRequest.java" title="编辑请求"/>
     <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/QuestionQueryRequest.java" title="查询请求"/>
     <tree path="/src/main/java/com/yupi/starseaoj/model/dto/question/QuestionUpdateRequest.java" title="更新请求"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/CodeSandbox.java" title="代码沙箱接口"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/model/JudgeInfo.java" title="判题信息"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/model/ExecuteCodeRequest.java"
+          title="判题机请求参数"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox/model/ExecuteCodeResponse.java"
+          title="判题机响应参数"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge" title="判题机模块"/>
+    <tree path="/src/main/java/com/yupi/starseaoj/judge/codesandbox" title="代码沙箱"/>
 </trees>

@@ -1,4 +1,4 @@
-## 项目规划
+## 一、项目规划
 
 ### 实现核心
 
@@ -26,7 +26,7 @@
 
 ### 核心业务流程
 
-![Snipaste_2024-08-08_03-16-10](photo/Snipaste_2024-08-08_03-16-10.png)
+![Snipaste_2024-08-10_23-42-44](photo/Snipaste_2024-08-10_23-42-44.png)
 
 ![Snipaste_2024-08-08_03-19-44](photo/Snipaste_2024-08-08_03-19-44.png)
 
@@ -86,7 +86,7 @@ Spring Cloud 微服务 、消息队列、多种设计模式
 
 
 
-## 系统功能梳理
+## 二、系统功能梳理
 
 1. 用户模块
    i. 注册
@@ -105,7 +105,7 @@ Spring Cloud 微服务 、消息队列、多种设计模式
 
 
 
-## 库表设计
+## 三、库表设计
 
 ### 用户表
 
@@ -254,7 +254,7 @@ create table if not exists question_submit
 
 
 
-## 后端接口开发
+## 四、后端接口开发
 
 ### 后端开发流程
 
@@ -279,7 +279,7 @@ create table if not exists question_submit
 
 8. 编写枚举类。
 
-9. 利用Swagger测试接口。
+9. 利用Swagger测试
 
 
 
@@ -303,11 +303,122 @@ private Long id;
 
 
 
+## 五、判题机架构
+
+### 判题模块和代码沙箱的关系
+
+判题模块：调用代码沙箱，把代码和输入交给代码沙箱去执行
+
+代码沙箱：只负责接受代码和输入，返回编译运行的结果，不负责判题（可以作为独立的项目 / 服务，提供给其他的需要执行代码的项目去使用）
+
+这两个模块完全解耦：
+
+![Snipaste_2024-08-11_15-28-37](photo/Snipaste_2024-08-11_15-28-37.png)
+
+
+
+### 性能优化点（批处理）
+
+代码沙箱要接受和输出一组运行用例，包含题目代码、编程语言和**多个输入用例**，而不是单个输入样例。
+
+因为每个用例单独调用一次代码沙箱，会调用多次接口、需要多次网络传输、程序要多次编译、记录程序的执行状态（重复的代码不重复编译）
+
+
+
+### 为什么代码沙箱不使用消息队列？
+
+因为为了使判题机模块更加通用且方便实用，发送请求调用即可使用，而不需要再去部署消息队列。
+
+
+
+### 代码沙箱架构开发
+
+1. 定义代码沙箱的接口，提高通用性
+
+   项目代码**只调用接口而不调用具体的实现类**的原因：这样在以后如果使用其他的代码沙箱实现类时，就不用去调用代码沙箱的代码处修改名称了， 便于扩展。
+
+   代码沙箱的请求接口中，timeLimit 可加可不加，若需要设置即时中断程序可添加。
+
+   扩展思路：增加一个查看代码沙箱状态的接口。
+
+2. 定义多种不同的代码沙箱实现。
+
+   示例代码沙箱：仅为了跑通业务流程
+
+   远程代码沙箱：实际调用接口的沙箱
+
+   第三方代码沙箱：调用网上现成的代码沙箱，https://github.com/criyle/go-judge
+
+3. 编写单元测试，验证单个代码沙箱的执行
+
+   ```java
+   @SpringBootTest
+   class CodeSandboxTest {
+   
+       /**
+        * 测试代码沙箱，使用构造器模式赋值，判断代码沙箱返回是否为空
+        */
+       @Test
+       void executeCode() {
+           CodeSandbox codeSandbox = new ExampleCodeSandbox();
+           String code = "int main(){}";
+           String language = QuestionSubmitLanguageEnum.JAVA.getValue();
+           List<String> inputList = Arrays.asList("1 2", "3 4");
+           ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                   .code(code)
+                   .language(language)
+                   .inputList(inputList)
+                   .build();
+           ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+           Assertions.assertNotNull(executeCodeResponse);
+       }
+   }
+   ```
+
+   当前存在**问题**：把 new 某个沙箱的代码写死了，如果后面项目要改用其他沙箱，可能要改很多地方的代码。
+
+4. 使用**工厂模式**，根据用户传入的字符串参数（沙箱类别），来生成对应的代码沙箱实现类。
+
+   
+
+
+
+### 对象赋值优化 - 构造器模式 - Lombok Builder 注解
+
+1. 实体类加上 @Builder 等注解：
+
+```java
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExecuteCodeRequest {
+
+    private List<String> inputList;
+
+    private String code;
+
+    private String language;
+}
+```
+
+2. 可以使用链式的方式更方便地给对象赋值：
+
+```java
+ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+    .code(code)
+    .language(language)
+    .inputList(inputList)
+    .build();
+```
+
+
+
 ## Bug 解决
 
 1. md文档上传到github后图片不显示
 
-   通过分析路径名知会将 "photo/Snipaste_2024-08-08_03-27-12.png" 的 ’/' 识别为 %5c ，导致图片名为"photo%5cSnipaste_2024-08-08_03-27-12.png" ，故而找不到图片。
+   通过分析网页点击后的url路径名知，网页会将 "photo/Snipaste_2024-08-08_03-27-12.png" 的 ’/' 识别为 %5c ，导致图片名为"photo%5cSnipaste_2024-08-08_03-27-12.png" ，故而找不到图片。
 
    解决方法：将 / 改为 \ 即可。
 
