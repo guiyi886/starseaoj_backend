@@ -953,69 +953,85 @@ File userCodeFile = FileUtil.writeString(code, userCodePath, StandardCharsets.UT
 
 
 ## Bug 解决
+### 1.md文档上传到github后图片不显示。
 
-1. md文档上传到github后图片不显示。
+通过分析网页点击后的url路径名知，网页会将 "photo/Snipaste_2024-08-08_03-27-12.png" 的 ’/' 识别为 %5c ，导致图片名为"photo%5cSnipaste_2024-08-08_03-27-12.png" ，故而找不到图片。
 
-   通过分析网页点击后的url路径名知，网页会将 "photo/Snipaste_2024-08-08_03-27-12.png" 的 ’/' 识别为 %5c ，导致图片名为"photo%5cSnipaste_2024-08-08_03-27-12.png" ，故而找不到图片。
+解决方法：将 / 改为 \ 即可。
 
-   解决方法：将 / 改为 \ 即可。
-
-   ps. 在本地电脑时两个都可以正确识别，且默认为 / 
-
-   
-
-2. springboot程序启动失败，查看输出可知是循环依赖问题。
-
-   解决：找到循环依赖的字段，在其上方添加**@Lazy注解**，延迟这个 Bean 的初始化。
-
-   ![Snipaste_2024-08-12_00-55-37](photo/Snipaste_2024-08-12_00-55-37.png)
-
-
-
-3. 发现前端页面在登录后，右上角身份信息仍然显示未登录。
-
-   ![Snipaste_2024-08-12_01-12-47](photo/Snipaste_2024-08-12_01-12-47.png)
+ps. 在本地电脑时两个都可以正确识别，且默认为 / 
 
    
 
-   首先查看网络请求，定位报文和api接口。
+### 2.springboot程序启动失败，查看输出可知是循环依赖问题。
 
-   ![Snipaste_2024-08-12_01-14-44](photo/Snipaste_2024-08-12_01-14-44.png)
+解决：找到循环依赖的字段，在其上方添加**@Lazy注解**，延迟这个 Bean 的初始化。
 
-   
+![Snipaste_2024-08-12_00-55-37](photo/Snipaste_2024-08-12_00-55-37.png)
 
-   使用Swagger接口文档测试该接口，发现userName字段为null。查看后端日志输出，发现从数据库查到的数据中，用户名在userAccount字段上，userName字段为null，而前端获取用户名的依据是userName，因此导致该问题。
 
-   ![Snipaste_2024-08-12_01-16-03](photo/Snipaste_2024-08-12_01-16-03.png)
 
-   ![Snipaste_2024-08-12_01-16-47](photo/Snipaste_2024-08-12_01-16-47.png)
+### 3.发现前端页面在登录后，右上角身份信息仍然显示未登录。  
 
-   
-
-   解决方法：在注册业务中，将用户名也设为账号名，比如都为jack。
-
-   ![Snipaste_2024-08-12_01-29-30](photo/Snipaste_2024-08-12_01-29-30.png)
+![Snipaste_2024-08-12_01-12-47](photo/Snipaste_2024-08-12_01-12-47.png)
 
    
 
-   4.测试代码沙箱时，发现判题信息均为null。可知题目提交接口存在问题
+ 首先查看网络请求，定位报文和api接口。
 
-   ![Snipaste_2024-08-12_01-59-12](photo/Snipaste_2024-08-12_01-59-12.png)
-
-   
-
-   观察该接口业务层代码，定位到判题服务部分。在doJudge方法中打上断点后，前端重新提交代码，发现断点未生效，说明该异步任务并未执行。
-
-   ![Snipaste_2024-08-12_02-02-11](photo/Snipaste_2024-08-12_02-02-11.png)
+![Snipaste_2024-08-12_01-14-44](photo/Snipaste_2024-08-12_01-14-44.png)
 
    
 
-   查阅资料后，在任意一个配置类上添加@EnableAsync开启异步功能，并在doJudge方法上添加@Async注解。再次提交代码后发现成功进入doJudge方法，放行断点后发现抛出异常，分析异常信息可知问题出现在76行左右，定位到代码的更改判题部分。逐行查看代码、以及根据日志中的sql语句的id、表中的id比对，发现是72行的questionId出错，应该为questionSubmitId。
+使用Swagger接口文档测试该接口，发现userName字段为null。查看后端日志输出，发现从数据库查到的数据中，用户名在userAccount字段上，userName字段为null，而前端获取用户名的依据是userName，因此导致该问题。
 
-   ![Snipaste_2024-08-12_02-08-48](photo/Snipaste_2024-08-12_02-08-48.png)
+![Snipaste_2024-08-12_01-16-03](photo/Snipaste_2024-08-12_01-16-03.png)
+
+ ![Snipaste_2024-08-12_01-16-47](photo/Snipaste_2024-08-12_01-16-47.png)
 
    
 
-   再次提交代码，发现此时已经有判题结果了，业务流程已经跑通。
+解决方法：在注册业务中，将用户名也设为账号名，比如都为jack。
 
-   ![Snipaste_2024-08-12_02-18-53](photo/Snipaste_2024-08-12_02-18-53.png)
+![Snipaste_2024-08-12_01-29-30](photo/Snipaste_2024-08-12_01-29-30.png)
+
+   
+
+### 4.测试代码沙箱时，发现判题信息均为null。
+
+![Snipaste_2024-08-12_01-59-12](photo/Snipaste_2024-08-12_01-59-12.png)
+
+   
+
+推测题目提交接口存在问题，观察该接口业务层代码，定位到判题服务部分。在doJudge方法中打上断点后，前端重新提交代码，发现断点未生效，说明该异步任务并未执行。
+
+![Snipaste_2024-08-12_02-02-11](photo/Snipaste_2024-08-12_02-02-11.png)
+
+   
+
+查阅资料后，在任意一个配置类上添加@EnableAsync开启异步功能，并在doJudge方法上添加@Async注解。再次提交代码后发现成功进入doJudge方法，放行断点后发现抛出异常，分析异常信息可知问题出现在76行左右，定位到代码的更改判题部分。逐行查看代码、以及根据日志中的sql语句的id、表中的id比对，发现是72行的questionId出错，应该为questionSubmitId。
+
+![Snipaste_2024-08-12_02-08-48](photo/Snipaste_2024-08-12_02-08-48.png)
+
+   
+
+再次提交代码，发现此时已经有判题结果了，业务流程已经跑通。
+
+![Snipaste_2024-08-12_02-18-53](photo/Snipaste_2024-08-12_02-18-53.png)
+
+
+
+### 5.多模块下使用System.getProperty("user.dir");获取根目录失败。
+
+在第二个模块使用System.getProperty("user.dir");获取根目录路径时，返回的是第一个模块的根目录。
+
+解决方法：根据当前类路径获取父级目录得到根目录。
+
+```java
+ClassLoader classLoader = getClass().getClassLoader();
+File file = new File(classLoader.getResource("").getFile());
+String projectRoot = file.getParentFile().getParentFile().getPath();
+```
+
+
+
