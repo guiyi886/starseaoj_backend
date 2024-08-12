@@ -1,4 +1,4 @@
-package com.yupi.starseaoj.manager;
+package com.guiyi.starseaoj.manager;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

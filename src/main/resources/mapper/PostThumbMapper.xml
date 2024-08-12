@@ -3,9 +3,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yupi.starseaoj.mapper.PostThumbMapper">
+<mapper namespace="com.guiyi.starseaoj.mapper.PostThumbMapper">
 
-    <resultMap id="BaseResultMap" type="com.yupi.starseaoj.model.entity.PostThumb">
+    <resultMap id="BaseResultMap" type="com.guiyi.starseaoj.model.entity.PostThumb">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="postId" column="postId" jdbcType="BIGINT"/>
         <result property="userId" column="userId" jdbcType="BIGINT"/>

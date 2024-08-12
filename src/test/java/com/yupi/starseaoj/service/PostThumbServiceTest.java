@@ -1,6 +1,6 @@
-package com.yupi.starseaoj.service;
+package com.guiyi.starseaoj.service;
 
-import com.yupi.starseaoj.model.entity.User;
+import com.guiyi.starseaoj.model.entity.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

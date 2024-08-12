@@ -1,4 +1,4 @@
-package com.yupi.starseaoj.service;
+package com.guiyi.starseaoj.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ public class UserServiceTest {
 
     @Test
     void userRegister() {
-        String userAccount = "yupi";
+        String userAccount = "guiyi";
         String userPassword = "";
         String checkPassword = "123456";
         try {

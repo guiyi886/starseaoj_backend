@@ -1,9 +1,9 @@
-package com.yupi.starseaoj.judge.codesandbox;
+package com.guiyi.starseaoj.judge.codesandbox;
 
-import com.yupi.starseaoj.judge.codesandbox.impl.ExampleCodeSandbox;
-import com.yupi.starseaoj.judge.codesandbox.model.ExecuteCodeRequest;
-import com.yupi.starseaoj.judge.codesandbox.model.ExecuteCodeResponse;
-import com.yupi.starseaoj.model.enums.QuestionSubmitLanguageEnum;
+import com.guiyi.starseaoj.judge.codesandbox.impl.ExampleCodeSandbox;
+import com.guiyi.starseaoj.judge.codesandbox.model.ExecuteCodeRequest;
+import com.guiyi.starseaoj.judge.codesandbox.model.ExecuteCodeResponse;
+import com.guiyi.starseaoj.model.enums.QuestionSubmitLanguageEnum;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author guiyi
  * @Date 2024/8/11 下午4:08:55
- * @ClassName com.yupi.starseaoj.judge.codesandbox.CodeSandboxTest
+ * @ClassName com.guiyi.starseaoj.judge.codesandbox.CodeSandboxTest
  * @function -->
  */
 @SpringBootTest

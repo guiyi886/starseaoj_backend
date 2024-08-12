@@ -398,7 +398,7 @@ private Long id;
    /**
     * @author guiyi
     * @Date 2024/8/11 下午4:30:50
-    * @ClassName com.yupi.starseaoj.judge.codesandbox.CodeSandboxFactory
+    * @ClassName com.guiyi.starseaoj.judge.codesandbox.CodeSandboxFactory
     * @function --> 代码沙箱工厂（根据字符串参数创建指定的代码沙箱示例）
     */
    public class CodeSandboxFactory {
@@ -503,7 +503,7 @@ private Long id;
    /**
     * @author guiyi
     * @Date 2024/8/11 下午5:30:46
-    * @ClassName com.yupi.starseaoj.judge.codesandbox.CodeSandboxProxy
+    * @ClassName com.guiyi.starseaoj.judge.codesandbox.CodeSandboxProxy
     * @function --> 代码沙箱代理类
     */
    @Slf4j
@@ -537,7 +537,7 @@ private Long id;
    /**
     * @author guiyi
     * @Date 2024/8/11 下午4:04:24
-    * @ClassName com.yupi.starseaoj.judge.codesandbox.impl.CodeSandboxImpl
+    * @ClassName com.guiyi.starseaoj.judge.codesandbox.impl.CodeSandboxImpl
     * @function --> 示例代码沙箱（仅为了跑通业务流程）
     */
    public class ExampleCodeSandbox implements CodeSandbox {
@@ -597,7 +597,7 @@ private Long id;
 /**
  * @author guiyi
  * @Date 2024/8/11 下午6:21:32
- * @ClassName com.yupi.starseaoj.judge.JudgeServiceImpl
+ * @ClassName com.guiyi.starseaoj.judge.JudgeServiceImpl
  * @function -->
  */
 @Service // 和 @Component 没有实际区别，仅做语义区分，表示这是服务层
@@ -728,7 +728,7 @@ public class JudgeServiceImpl implements JudgeService {
    /**
     * @author guiyi
     * @Date 2024/8/11 下午8:09:28
-    * @ClassName com.yupi.starseaoj.judge.strategy.JudgeStrategy
+    * @ClassName com.guiyi.starseaoj.judge.strategy.JudgeStrategy
     * @function --> 判题策略
     */
    public interface JudgeStrategy {
@@ -750,7 +750,7 @@ public class JudgeServiceImpl implements JudgeService {
    /**
     * @author guiyi
     * @Date 2024/8/11 下午11:49:50
-    * @ClassName com.yupi.starseaoj.judge.strategy.JudgeContext
+    * @ClassName com.guiyi.starseaoj.judge.strategy.JudgeContext
     * @function --> 上下文-策略参数传递
     */
    @Data
@@ -793,7 +793,7 @@ public class JudgeServiceImpl implements JudgeService {
    /**
     * @author guiyi
     * @Date 2024/8/12 上午12:28:28
-    * @ClassName com.yupi.starseaoj.judge.JudgeManager
+    * @ClassName com.guiyi.starseaoj.judge.JudgeManager
     * @function --> 判题管理（简化调用）
     */
    @Service
