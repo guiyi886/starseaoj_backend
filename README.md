@@ -908,11 +908,41 @@ java -cp . Main 1 6
 
 #### 1.保存代码文件
 
+引入 Hutool 工具类，提高操作文件效率：
+
+```xml
+<dependency>
+    <groupId>cn.hutool</groupId>
+    <artifactId>hutool-all</artifactId>
+    <version>5.8.26</version>
+</dependency>
+```
 
 
 
+新建目录，将每个用户的代码都存放在独立目录tmpCode下，通过 UUID 随机生成目录名，便于隔离和维护：
+
+```java
+// 获取当前项目路径
+String userDir = System.getProperty("user.dir");
+
+// 用File.separator，因为windows和linux的分隔符不一样，一个\\，一个/
+String tmpCodePath = userDir + File.separator + TMP_CODE_DIR;
+
+// 创建临时目录
+if (!FileUtil.exist(tmpCodePath)) {
+    FileUtil.mkdir(tmpCodePath);
+}
+
+// 隔离存放用户代码
+String userCodeParentPath = tmpCodePath + File.separator + UUID.randomUUID();
+String userCodePath = userCodeParentPath + File.separator + JAVA_CLASS_NAME;
+File userCodeFile = FileUtil.writeString(code, userCodePath, StandardCharsets.UTF_8);
+```
 
 
+
+#### 2.编译代码
 
 
 
