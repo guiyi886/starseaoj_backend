@@ -820,6 +820,108 @@ public class JudgeServiceImpl implements JudgeService {
 
 
 
+## 五、代码沙箱 —— Java实现
+
+项目地址：https://github.com/guiyi886/starseaoj_code_sandbox
+
+
+
+### 代码沙箱项目初始化
+
+**代码沙箱的定位**：只负责接受代码和输入，返回编译运行的结果，不负责判题（可以作为独立的项目 / 服务，提供给其他的需要执行代码的项目去使用）
+
+由于代码沙箱是能够通过 API 调用的**独立服务**，所以新建一个 Spring Boot Web 项目。最终这个项目要提供一个能够执行代码、操作代码沙箱的接口。
+
+使用 IDEA 的 Spring Boot 项目初始化工具，选择 **Java 8、Spring Boot 2.7 版本**。
+
+**注意**：由于Spring Boot将来会全力支持Java17，不再维护支持Java8的版本，因此官方服务器默认禁用了对Java 8的支持。此时需要将服务器URL改为阿里云的： https://start.aliyun.com/
+
+![Snipaste_2024-08-12_19-45-39](photo/Snipaste_2024-08-12_19-45-39.png)
+
+
+
+### Java 原生实现代码沙箱
+
+原生：尽可能不借助第三方库和依赖，用最干净、最原始的方式实现代码沙箱
+
+#### 命令行执行程序流程
+
+接收代码 => 编译代码（javac） => 执行代码（java）
+
+ javac 编译，用 `-encoding utf-8` 参数解决中文乱码问题，使用`--release` 8兼容Java 8的运行时：
+
+```shell
+javac SimpleCompute.java -encoding utf-8 --release 8
+```
+
+java 执行，`-cp` 是 `-classpath` 的缩写，用于指定Java类路径。类路径是JVM查找类文件（.class文件）的路径。`-cp .` 表示将当前目录（`.`）作为类路径。：
+
+```shell
+java -cp . SimpleCompute 1 6
+```
+
+![Snipaste_2024-08-13_00-59-46](photo/Snipaste_2024-08-13_00-59-46.png)
+
+
+
+#### 统一类名
+
+实际的 OJ 系统中，对用户输入的代码有一定的要求。便于系统进行统一处理和判题。
+
+此处我们把用户输入代码的类名限制为 Main（如蓝桥杯），可以减少编译时类名不一致的风险，并且无需从用户代码中提取类名。
+
+文件名 Main.java，示例代码如下：
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        int a = Integer.parseInt(args[0]);
+        int b = Integer.parseInt(args[1]);
+        System.out.println("结果:" + (a + b));
+    }
+}
+```
+
+实际执行命令时，可以统一使用 Main 类名，类似如下：
+
+```shell
+javac Main.java -encoding utf-8 --release 8
+java -cp . Main 1 6
+```
+
+
+
+### 核心流程实现
+
+核心实现思路：用程序代替人工，用程序来操作命令行，去编译执行代码
+
+核心依赖：Java 进程类 Process
+
+1. 把用户的代码保存为文件
+2. 编译代码，得到 class 文件
+3. 执行代码，得到输出结果
+4. 收集整理输出结果
+5. 文件清理，释放空间
+6. 错误处理，提升程序健壮性
+
+
+
+#### 1.保存代码文件
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Bug 解决
 
 1. md文档上传到github后图片不显示。
