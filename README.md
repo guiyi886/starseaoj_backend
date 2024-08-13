@@ -1169,7 +1169,35 @@ private ExecuteCodeResponse getErrorResponse(Exception e) {
 
 ### 扩展 —— 异常情况应对
 
+目前核心流程已经实现，但是若上线的话，仍存在安全问题（恶意代码、木马等）。
 
+
+
+#### 1.恶意运行超时
+
+注意测试代码不能添加包名，且类名要为Main。
+
+执行后会一直阻塞，导致代码沙箱无法正常处理后续
+
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/13 下午8:55:31
+ * @ClassName com.starseaoj.starseaojcodesandbox.unsafe.SleepError
+ * @function --> 无限睡眠（阻塞程序运行）
+ */
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        long ONE_HOUR = 60 * 60 * 1000L;
+        Thread.sleep(ONE_HOUR);
+        System.out.println("睡完了");
+    }
+}
+```
+
+
+
+#### 2.恶意占用内存
 
 
 
