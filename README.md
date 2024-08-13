@@ -882,10 +882,10 @@ public class Main {
 }
 ```
 
-实际执行命令时，可以统一使用 Main 类名，类似如下：
+实际执行命令时，可以统一使用 Main 类名，命令如下：
 
 ```shell
-javac Main.java -encoding utf-8 --release 8
+javac Main.java -encoding utf-8
 java -cp . Main 1 6
 ```
 
@@ -923,11 +923,14 @@ java -cp . Main 1 6
 新建目录，将每个用户的代码都存放在独立目录tmpCode下，通过 UUID 随机生成目录名，便于隔离和维护：
 
 ```java
-// 获取当前项目路径
-String userDir = System.getProperty("user.dir");
+// 根据资源路径推导出模块根目录
+// String userDir = System.getProperty("user.dir");  // 多模块时用该语句会获取成第一个模块的根目录
+ClassLoader classLoader = getClass().getClassLoader();
+File file = new File(classLoader.getResource("").getFile());
+String projectRoot = file.getParentFile().getParentFile().getPath();
 
 // 用File.separator，因为windows和linux的分隔符不一样，一个\\，一个/
-String tmpCodePath = userDir + File.separator + TMP_CODE_DIR;
+String tmpCodePath = projectRoot + File.separator + TMP_CODE_DIR;
 
 // 创建临时目录
 if (!FileUtil.exist(tmpCodePath)) {
@@ -944,7 +947,60 @@ File userCodeFile = FileUtil.writeString(code, userCodePath, StandardCharsets.UT
 
 #### 2.编译代码
 
+使用 Process 类在终端执行命令，执行 process.waitFor 等待程序执行完成，并通过返回的 exitValue 判断程序是否正常返回，然后从 Process 的输入流 inputStream 和错误流 errorStream 获取控制台输出。
 
+```java
+// 编译命令
+String compileCmd = String.format("javac %s -encoding utf-8", userCodeFile.getAbsolutePath());
+try {
+    // 编译
+    Process complileProcess = Runtime.getRuntime().exec(compileCmd);
+    // 等待编译完成，获取进程的退出值
+    int exitValue = complileProcess.waitFor();
+    if (exitValue == 0) {
+        System.out.println("编译成功");
+
+        // 获取程序输出
+        // 注意是Input而不是Output，因为Process类是这么定义的，不用纠结
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+        StringBuilder complieOutputStringBuilder = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            complieOutputStringBuilder.append(line);
+        }
+        System.out.println(complieOutputStringBuilder);
+    } else {
+        System.out.println("编译失败：" + exitValue);
+
+        // 获取输出流和错误流
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+        StringBuilder complieOutputStringBuilder = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            complieOutputStringBuilder.append(line);
+        }
+        System.out.println(complieOutputStringBuilder);
+        BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+        StringBuilder errorComplieOutputStringBuilder = new StringBuilder();
+        String errorLine;
+        while ((errorLine = errorBufferedReader.readLine()) != null) {
+            errorComplieOutputStringBuilder.append(errorLine);
+        }
+        System.out.println(errorComplieOutputStringBuilder);
+    }
+
+} catch (IOException | InterruptedException e) {
+    throw new RuntimeException(e);
+}
+```
+
+
+
+为了简化JavaNativeCodeSandbox类中executeCode方法，将以上代码提取为工具类ProcessUtils。执行进程并获取输出，并且使用 StringBuilder 拼接控制台输出信息。
+
+
+
+#### 3.执行程序
 
 
 
@@ -1034,4 +1090,18 @@ String projectRoot = file.getParentFile().getParentFile().getPath();
 ```
 
 
+
+### 6.运行代码后，编译运行成功，返回结果乱码，且编译命令javac有添加-encoding utf-8。
+
+![Snipaste_2024-08-13_16-29-02](photo/Snipaste_2024-08-13_16-29-02.png)
+
+
+
+尝试在运行命令java后也添加-encoding utf-8，发现还是有乱码。
+
+搜索资料后在运行命令java后添加-Dfile.encoding=UTF-8参数，再次运行中文显示正常。
+
+注意要放在-cp前面，否则不生效。
+
+![Snipaste_2024-08-13_16-37-37](photo/Snipaste_2024-08-13_16-37-37.png)
 
