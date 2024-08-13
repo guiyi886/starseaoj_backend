@@ -97,4 +97,7 @@
           title="无限睡眠（阻塞程序运行）"/>
     <tree path="ndbox/src/main/java/com/starseaoj/starseaojcodesandbox/utils/ProcessUtils.java"
           title="终端执行命令工具类"/>
+    <tree path="ndbox/src/main/java/com/starseaoj/starseaojcodesandbox/unsafe/MemoryError.java"
+          title="无限占用空间（浪费系统内存）"/>
+    <tree path="ndbox/src/main/java/com/starseaoj/starseaojcodesandbox/unsafe/ReadFileError.java" title="读取敏感文件"/>
 </trees>

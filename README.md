@@ -1177,7 +1177,7 @@ private ExecuteCodeResponse getErrorResponse(Exception e) {
 
 注意测试代码不能添加包名，且类名要为Main。
 
-执行后会一直阻塞，导致代码沙箱无法正常处理后续
+执行后会一直阻塞，导致代码沙箱无法正常处理后续代码文件。
 
 ```java
 /**
@@ -1199,7 +1199,45 @@ public class Main {
 
 #### 2.恶意占用内存
 
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/13 下午9:15:08
+ * @ClassName com.starseaoj.starseaojcodesandbox.unsafe.MemoryError
+ * @function --> 无限占用空间（浪费系统内存）
+ */
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        List<byte[]> bytes = new ArrayList<>();
+        while (true) {
+            bytes.add(new byte[10000]);
+        }
+    }
+}
+```
 
+实际运行程序时会发现内存占用到达一定空间后，程序就报错：`java.lang.OutOfMemoryError: Java heap space`，而不是无限增加内存占用，直到系统死机。这是 JVM 的一个保护机制。
+
+可以使用 JConsole 工具，连接到 JVM 虚拟机上来可视化查看运行状态。
+
+![Snipaste_2024-08-13_21-45-00](photo/Snipaste_2024-08-13_21-45-00.png)
+
+
+
+#### 3.读文件，获取敏感信息
+
+比如直接通过相对路径获取项目配置文件：
+
+```java
+public class Main {
+    public static void main(String[] args) throws InterruptedException, IOException {
+        String userDir = System.getProperty("user.dir");
+        String filePath = userDir + File.separator + "src/main/resources/application.yml";
+        List<String> allLines = Files.readAllLines(Paths.get(filePath));
+        System.out.println(String.join("\n", allLines));
+    }
+}
+```
 
 
 
