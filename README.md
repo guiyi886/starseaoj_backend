@@ -1129,6 +1129,54 @@ for (ExecuteMessage executeMessage : executeMessageList) {
 
 
 
+#### 5.文件清理
+
+```java
+// 5.文件清理
+if (userCodeFile.getParentFile().exists()) {
+    boolean isDel = FileUtil.del(userCodeFile.getParentFile());
+    System.out.println("删除" + (isDel ? "成功" : "失败"));
+}
+```
+
+
+
+#### 6.错误处理
+
+封装一个错误处理方法，当程序抛出异常时，直接返回错误响应。
+
+```java
+/**
+ * 6.错误处理
+ * 获取错误响应
+ *
+ * @param e
+ * @return
+ */
+private ExecuteCodeResponse getErrorResponse(Exception e) {
+    ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
+    executeCodeResponse.setOutputList(new ArrayList<>());
+    executeCodeResponse.setMessage(e.getMessage());
+    // 表示代码沙箱错误
+    executeCodeResponse.setStatus(2);
+    executeCodeResponse.setJudgeInfo(new JudgeInfo());
+
+    return executeCodeResponse;
+}
+```
+
+
+
+### 扩展 —— 异常情况应对
+
+
+
+
+
+
+
+
+
 
 
 ## Bug 解决
