@@ -1094,6 +1094,41 @@ for (String inputArgs : inputList) {
 
 
 
+#### 4.整理输出
+
+（1）通过 for 循环遍历执行结果，从中获取输出列表
+
+（2）获取程序执行时间：使用 Spring 的 StopWatch 获取：
+
+```java
+StopWatch stopWatch = new StopWatch();
+stopWatch.start();
+... 程序执行
+stopWatch.stop();
+stopWatch.getLastTaskTimeMillis(); // 获取时间
+```
+
+此处我们使用最大值来统计时间，便于后续判题服务计算程序是否超时：
+
+```java
+// 取所有测试用例的最大值
+long maxTime = 0;
+for (ExecuteMessage executeMessage : executeMessageList) {
+    String errorMessage = executeMessage.getErrorMassage();
+    if (StrUtil.isNotBlank(errorMessage)) {
+        break;
+    }
+    if (maxTime < executeMessage.getTime()) {
+        maxTime = executeMessage.getTime();
+    }
+    outputList.add(executeMessage.getMessage());
+}
+```
+
+> 扩展：可以每个测试用例都有一个独立的内存、时间占用的统计
+
+
+
 
 
 ## Bug 解决
