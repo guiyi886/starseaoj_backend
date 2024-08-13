@@ -1241,6 +1241,38 @@ public class Main {
 
 
 
+#### 4.写文件，越权植入木马
+
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/13 下午10:07:57
+ * @ClassName com.starseaoj.starseaojcodesandbox.unsafe.WriteFileError
+ * @function --> 写文件，植入木马
+ */
+public class Main {
+    public static void main(String[] args) throws IOException {
+        String userDir = System.getProperty("user.dir");
+        String filePath = userDir + File.separator + "src/main/resources/木马程序.bat";
+
+        // 创建bat文件，将恶意代码如删除文件等写入
+        String errorProgram = "this is bad code";
+        Files.write(Paths.get(filePath), Arrays.asList(errorProgram));
+
+        // 使用终端命令运行bat文件...
+        System.out.println("运行bat文件");
+    }
+}
+```
+
+
+
+#### 5.运行其他程序
+
+直接通过 Process类对象执行危险程序，或者电脑上的其他程序：
+
+
+
 
 
 
