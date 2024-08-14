@@ -1167,7 +1167,7 @@ private ExecuteCodeResponse getErrorResponse(Exception e) {
 
 
 
-### 扩展 —— 异常情况应对
+### 扩展 —— 安全问题
 
 目前核心流程已经实现，但是若上线的话，仍存在安全问题（恶意代码、木马等）。
 
@@ -1270,6 +1270,48 @@ public class Main {
 #### 5.运行其他程序
 
 直接通过 Process类对象执行危险程序，或者电脑上的其他程序：
+
+
+
+#### 6.执行高危操作
+
+直接执行系统自带的危险命令
+
+- 比如删除服务器的所有文件
+- 比如执行 dir（windows）、ls（linux） 获取系统上的所有文件信息
+
+
+
+### Java程序安全控制
+
+针对上面的异常情况，分别有如下方案，可以提高程序安全性。
+
+
+
+#### 1.超时控制
+
+通过创建一个守护线程，超时后自动中断 Process 实现。
+
+代码如下：
+
+```java
+// 超时控制:创建一个守护线程，超时后自动中断 Process 实现
+new Thread(() -> {
+    try {
+        Thread.sleep(TIME_OUT);
+        System.out.println("超时控制 -> 中断");
+        process.destroy();
+    } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    }
+}).start();
+```
+
+
+
+#### 2.限制资源分配
+
+
 
 
 
