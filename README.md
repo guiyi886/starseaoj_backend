@@ -1381,7 +1381,57 @@ jvm的限制本质上还是应用层面的限制，要严格限制的话需要�
 
 #### 3.限制代码-黑白名单
 
-定义一个黑白名单，将禁止的操作加入其中
+定义一个黑白名单，将禁止的操作加入其中。
+
+使用字典树代替列表存储单词，用 **更少的空间** 存储更多的敏感词汇，并且实现 **更高效** 的敏感词查找。
+
+![Snipaste_2024-08-15_16-46-09](photo/Snipaste_2024-08-15_16-46-09.png)
+
+```java
+// 屏蔽关键字
+private static final List<String> blockList = Arrays.asList("Files", "exec", "bat", "rm");
+```
+
+
+
+在executeCode方法中，使用 HuTool 工具库的字典树工具类：WordTree 检查屏蔽词。
+
+```java
+// 校检代码检查屏蔽词
+WordTree wordTree = new WordTree();
+// 加入字典树
+wordTree.addWords(blockList);
+// 获取匹配到的屏蔽词
+FoundWord foundWord = WORD_TREE.matchWord(code);
+if (foundWord != null) {
+    // 输出屏蔽词
+    System.out.println("包含屏蔽词" + foundWord.getFoundWord());
+    return null;
+}
+```
+
+
+
+##### 优化点
+
+字典树工具类只需要创建一次后反复使用即可，所以不应该放在executeCode方法中，会导致每次调用executeCode方法都重新创建字典树，浪费性能。应该将其设为静态代码。
+
+```java
+// 屏蔽关键字
+private static final List<String> BLOCK_LIST = Arrays.asList("Files", "exec", "bat", "rm");
+
+// 校检代码检查屏蔽词
+private static final WordTree WORD_TREE = new WordTree();
+
+static {
+    // 加入字典树
+    WORD_TREE.addWords(BLOCK_LIST);
+}
+```
+
+
+
+#### 4.
 
 
 
