@@ -1311,9 +1311,77 @@ new Thread(() -> {
 
 #### 2.限制资源分配
 
+不能让每个 java 进程的执行占用的 JVM 最大堆内存空间都和系统默认的一致，实际上应该更小，比如 256MB。
+
+在启动 Java 程序时，可以指定 JVM 的参数：-Xmx256m（最大堆空间大小）
+
+```shell
+java -Xmx256m
+```
 
 
 
+注意：-Xmx256m并不能百分百限制，-Xmx256m 设置了 JVM 堆的最大内存为 256MB。
+
+堆内存是 JVM 用于分配对象的主要区域。
+
+JVM 还使用其他内存区域，比如：
+
+- **方法区（Metaspace 或 PermGen）**：存储类元数据。
+- **栈内存（Stack）**：每个线程都有自己的栈，用于存储局部变量和方法调用。
+- **本机内存（Native memory）**：例如直接内存或其他 JNI 调用分配的内存。
+
+
+
+jvm的限制本质上还是应用层面的限制，要严格限制的话需要操作系统层面的限制。
+
+如果是 Linux 系统，可以使用 **cgroup** 来实现对某个进程的 CPU、内存等资源的分配。
+
+
+
+##### 什么是 cgroup？
+
+`cgroup` 是 Linux 内核提供的一种机制，可以用来限制进程组（包括子进程）的资源使用，例如内存、CPU、磁盘 I/O 等。通过将 Java 进程放置在特定的 `cgroup` 中，可以实现限制其使用的内存和 CPU 数。
+
+创建 cgroup 控制组 - 设置资源限制 - 将进程加入 cgroup
+
+
+
+##### 常用 JVM 内存相关参数
+
+○ -Xms: 设置 JVM 的初始堆内存大小。
+
+○ -Xmx: 设置 JVM 的最大堆内存大小。
+
+○ -Xss: 设置线程的栈大小。
+
+○ -XX:MaxMetaspaceSize: 设置 Metaspace（元空间）的最大大小。
+
+○ -XX:MaxDirectMemorySize: 设置直接内存（Direct Memory）的最大大小。 2. 垃圾回收相关参数：
+
+○ -XX:+UseSerialGC: 使用串行垃圾回收器。
+
+○ -XX:+UseParallelGC: 使用并行垃圾回收器。
+
+○ -XX:+UseConcMarkSweepGC: 使用 CMS 垃圾回收器。
+
+○ -XX:+UseG1GC: 使用 G1 垃圾回收器。 3. 线程相关参数：
+
+○ -XX:ParallelGCThreads: 设置并行垃圾回收的线程数。
+
+○ -XX:ConcGCThreads: 设置并发垃圾回收的线程数。
+
+○ -XX:ThreadStackSize: 设置线程的栈大小。 4. JIT 编译器相关参数：
+
+○ -XX:TieredStopAtLevel: 设置 JIT 编译器停止编译的层次。 5. 其他资源限制参数：
+
+○ -XX:MaxRAM: 设置 JVM 使用的最大内存。
+
+
+
+#### 3.限制代码-黑白名单
+
+定义一个黑白名单，将禁止的操作加入其中
 
 
 
@@ -1410,9 +1478,11 @@ String projectRoot = file.getParentFile().getParentFile().getPath();
 
 尝试在运行命令java后也添加-encoding utf-8，发现还是有乱码。
 
-搜索资料后在运行命令java后添加-Dfile.encoding=UTF-8参数，再次运行中文显示正常。
+搜索资料后在运行命令java后添加**-Dfile.encoding=UTF-8**参数，再次运行中文显示正常。
 
 注意要放在-cp前面，否则不生效。
 
 ![Snipaste_2024-08-13_16-37-37](photo/Snipaste_2024-08-13_16-37-37.png)
+
+
 
