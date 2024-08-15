@@ -1379,11 +1379,11 @@ jvm的限制本质上还是应用层面的限制，要严格限制的话需要�
 
 
 
-#### 3.限制代码-黑白名单
+#### 3.限制代码 - 黑名单
 
-定义一个黑白名单，将禁止的操作加入其中。
+定义一个黑名单，将禁止的操作加入其中。
 
-使用字典树代替列表存储单词，用 **更少的空间** 存储更多的敏感词汇，并且实现 **更高效** 的敏感词查找。
+使用字典树代替列表存储单词，用 **更少的空间** 存储更多的敏感词汇，并且实现 **更高效** 的屏蔽词查找。
 
 ![Snipaste_2024-08-15_16-46-09](photo/Snipaste_2024-08-15_16-46-09.png)
 
@@ -1431,7 +1431,197 @@ static {
 
 
 
-#### 4.
+##### 缺点
+
+1.屏蔽词太多了，不同编程语言、不同领域、不同手段，人工统计成本大且难以穷举。
+
+2.对于所有的代码文件都要遍历一遍大量屏蔽词，非常消耗性能。
+
+
+
+#### 4.限制权限 - Java 安全管理器
+
+目标：限制用户对文件、内存、CPU、网络等资源的操作和访问。
+
+
+
+##### Java 安全管理器使用
+
+Java 安全管理器（Security Manager）是 Java 提供的保护 JVM、Java 安全的机制，可以实现更严格的资源和操作限制。
+
+编写安全管理器，只需要继承 Security Manager。
+
+
+
+###### 1.所有权限放开：
+
+```java
+package com.starseaoj.starseaojcodesandbox.security;
+
+import java.security.Permission;
+
+/**
+ * @author guiyi
+ * @Date 2024/8/16 上午2:34:51
+ * @ClassName com.starseaoj.starseaojcodesandbox.security.DefaultSecurityManager
+ * @function --> 默认安全管理器
+ */
+public class DefaultSecurityManager extends SecurityManager {
+
+    @Override
+    public void checkPermission(Permission perm) {
+        System.out.println("所有权限放开");
+    }
+}
+
+```
+
+
+
+###### 2.所有权限拒绝：
+
+```java
+package com.starseaoj.starseaojcodesandbox.security;
+
+import java.security.Permission;
+
+/**
+ * @author guiyi
+ * @Date 2024/8/16 上午2:34:51
+ * @ClassName com.starseaoj.starseaojcodesandbox.security.DefaultSecurityManager
+ * @function --> 默认安全管理器
+ */
+public class DefaultSecurityManager extends SecurityManager {
+
+    @Override
+    public void checkPermission(Permission perm) {
+        // System.out.println("所有权限放开");
+        // super.checkPermission(perm);
+        throw new SecurityException("权限异常：" + perm.toString());
+    }
+}
+
+```
+
+
+
+3.其他常用权限
+
+```java
+package com.starseaoj.starseaojcodesandbox.security;
+
+import java.security.Permission;
+
+/**
+ * @author guiyi
+ * @Date 2024/8/16 上午2:54:39
+ * @ClassName com.starseaoj.starseaojcodesandbox.security.MySecurityManager
+ * @function -->
+ */
+public class MySecurityManager extends SecurityManager {
+    // 所有权限
+    @Override
+    public void checkPermission(Permission perm) {
+        System.out.println("所有权限放开");
+    }
+
+    // cmd命令
+    @Override
+    public void checkExec(String cmd) {
+        throw new SecurityException("cmd命令执行被禁止：" + cmd);
+    }
+
+    // 连接权限
+    @Override
+    public void checkConnect(String host, int port) {
+        throw new SecurityException("连接被禁止：" + host + ":" + port);
+    }
+
+    // 读文件权限
+    @Override
+    public void checkRead(String file, Object context) {
+        throw new SecurityException("读文件被禁止：" + file);
+    }
+
+    // 写文件权限
+    @Override
+    public void checkWrite(String file) {
+        throw new SecurityException("写文件被禁止：" + file);
+    }
+
+    // 删除文件权限
+    @Override
+    public void checkDelete(String file) {
+        throw new SecurityException("删除文件被禁止：" + file);
+    }
+}
+```
+
+
+
+##### 结合项目运用
+
+实际情况下，不应该在主类（开发者自己写的程序）中做限制，只需要限制子程序的权限即可。
+
+启动子进程执行命令时，设置安全管理器，而不是在外层设置（会限制住测试用例的读写和子命令的执行）。
+
+具体操作如下：
+
+1. 根据需要开发自定义的安全管理器（比如 MySecurityManager）。
+
+2. 复制 MySecurityManager 类到 `resources/security` 目录下， **移除类的包名**。
+
+3. 手动输入命令编译 MySecurityManager 类，得到 class 文件。
+
+4. 在运行 java 程序时，指定安全管理器 class 文件的路径、安全管理器的名称。
+
+命令如下：
+
+> 注意，windows 用分号间隔多个类路径，linux用冒号。
+
+```java
+java -Dfile.encoding=UTF-8 -cp %s;%s -Djava.security.manager=MySecurityManager Main %s
+```
+
+依次执行之前的所有测试用例，发现资源成功被限制，比如读配置文件操作：
+
+![Snipaste_2024-08-16_03-53-50](photo/Snipaste_2024-08-16_03-53-50.png)
+
+
+
+**注意**：checkPermission方法要注释掉，若不注释则会全部放行，然后重新编译生成class文件。
+
+![Snipaste_2024-08-16_03-55-28](photo/Snipaste_2024-08-16_03-55-28.png)
+
+
+
+##### 安全管理器优点
+
+1. 权限控制灵活
+
+2. 实现简单
+
+   
+
+##### 安全管理器缺点
+
+1. 如果要做比较严格的权限限制，需要自己去判断哪些文件、包名需要允许读写。粒度太细了，各方面都要去设置，难以精细化控制。
+
+2. 安全管理器本身也是 Java 代码，也有可能存在漏洞。本质上还是程序层面的限制，没有深入系统的层面。
+
+3. **性能影响**：启用 `SecurityManager` 会导致一定的性能开销，每次进行受保护的操作时都会触发安全检查，可能一次代码运行就有数十次检查。
+
+4. **弃用警告**：从 Java 17 开始，`SecurityManager` 被标记为弃用，计划在未来的版本中移除。因此，尽量避免在新的项目中使用 `SecurityManager`，而是采用其他的安全机制，如基于模块的权限管理（如 Java 9 引入的模块系统，可以限制只使用基础包）。
+
+   
+
+#### 5、运行环境隔离
+
+原理：操作系统层面上，把用户程序封装到沙箱里，和服务器隔离开，使得用户的程序无法影响服务器。
+
+实现方式：Docker 容器技术（底层是用 cgroup、namespace 等方式实现的），也可以直接使用 cgroup 实现。
+
+
 
 
 
@@ -1520,7 +1710,7 @@ String projectRoot = file.getParentFile().getParentFile().getPath();
 
 
 
-### 6.运行代码后，编译运行成功，返回结果乱码，且编译命令javac有添加-encoding utf-8。
+### 6.运行代码后，使用命令编译运行文件成功，且编译命令javac有添加-encoding utf-8，但是返回结果乱码。
 
 ![Snipaste_2024-08-13_16-29-02](photo/Snipaste_2024-08-13_16-29-02.png)
 
@@ -1536,3 +1726,16 @@ String projectRoot = file.getParentFile().getParentFile().getPath();
 
 
 
+### 7.运行代码报错：MySecurityManager has been compiled by a more recent version of the Java Runtime
+
+![Snipaste_2024-08-16_03-32-05](photo/Snipaste_2024-08-16_03-32-05.png)
+
+
+
+查阅资料后得知： 表示你尝试运行的 `MySecurityManager` 类是使用较新的 Java 版本编译的，而当前使用的 Java 运行时环境（JRE）版本较旧，无法识别该类文件的版本。
+
+解决方法：在 `javac` 编译时指定 `-source` 和 `-target` 参数，以兼容 Java 8：
+
+```shell
+javac -encoding utf-8 -source 1.8 -target 1.8  MySecurityManager.java
+```
