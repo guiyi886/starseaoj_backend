@@ -1623,6 +1623,63 @@ java -Dfile.encoding=UTF-8 -cp %s;%s -Djava.security.manager=MySecurityManager M
 
 
 
+### 六、代码沙箱 —— Docker实现
+
+Docker 可以实现程序和宿主机的隔离，使得某个程序（应用）的执行不会影响到系统本身。
+
+
+
+#### Docker 基本概念
+
+镜像：用来创建容器的安装包，可以理解为给电脑安装操作系统的系统镜像
+
+容器：通过镜像来创建的一套运行环境，一个容器里可以运行多个程序，可以理解为一个电脑实例
+
+Dockerfile：制作镜像的文件，可以理解为制作镜像的一个清单
+
+镜像仓库：存放镜像的仓库，用户可以从仓库下载现成的镜像，也可以把做好的镜像放到仓库里
+
+
+
+#### Docker 实现核心
+
+1. Docker 运行在 Linux 内核上
+
+2. CGroups：实现了容器的资源隔离，底层是 Linux Cgroup 命令，能够控制进程使用的资源
+
+3. Network 网络：实现容器的网络隔离，docker 容器内部的网络互不影响
+
+4. Namespaces 命名空间：可以把进程隔离在不同的命名空间下，每个容器他都可以有自己的命名空间，不同的命名空间下的进程互不影响。
+
+5. Storage 存储空间：容器内的文件是相互隔离的，也可以去使用宿主机的文件
+
+
+
+#### Java 操作 Docker
+
+##### 1.引入依赖
+
+```xml
+<dependency>
+    <groupId>com.github.docker-java</groupId>
+    <artifactId>docker-java</artifactId>
+    <version>3.3.0</version>
+</dependency>
+<dependency>
+    <groupId>com.github.docker-java</groupId>
+    <artifactId>docker-java-transport-httpclient5</artifactId>
+    <version>3.3.0</version>
+</dependency>
+```
+
+
+
+DockerClientConfig：用于定义初始化 DockerClient 的配置（类比 MySQL 的连接、线程数配置）
+
+DockerHttpClient：用于向 Docker 守护进程（操作 Docker 的接口）发送请求的客户端，低层封装（不推荐使用），需要自己构建请求参数（简单地理解成 JDBC）
+
+DockerClient（推荐）：才是真正和 Docker 守护进程交互的、最方便的 SDK，高层封装，对 DockerHttpClient 再进行了一层封装（理解成 MyBatis），提供了现成的增删改查
+
 
 
 
