@@ -1892,6 +1892,8 @@ HostConfig hostConfig = new HostConfig();
 hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
 ```
 
+**注意**：容器不可复用，因为每次的挂载目录都不同，且docker 不支持直接修改已经创建的容器的挂载目录。因此只能删除后重新创建容器并挂载目录。
+
 
 
 ##### 启动容器，执行代码
