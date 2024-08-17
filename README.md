@@ -1682,6 +1682,213 @@ DockerClient（推荐）：才是真正和 Docker 守护进程交互的、最方
 
 
 
+##### 2.修改 docker.service 文件
+
+找到云服务器 /lib/systemd/system/docker.service 文件，修改ExecStart那一行，添加远程访问。
+
+注意：修改后需要配置防火墙限制ip，以确保安全性。
+
+![Snipaste_2024-08-17_02-08-19](photo/Snipaste_2024-08-17_02-08-19.png)
+
+
+
+使用以下命令重启docker
+
+```shell
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+
+
+##### 3.本地测试远程连接docker
+
+```java
+package com.starseaoj.starseaojcodesandbox.docker;
+
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.core.DockerClientBuilder;
+
+import java.util.List;
+
+/**
+ * @author guiyi
+ * @Date 2024/8/17 上午1:40:35
+ * @ClassName com.starseaoj.starseaojcodesandbox.docker.DockerDemo
+ * @function -->
+ */
+public class DockerDemo {
+    public static void main(String[] args) {
+        DockerClient dockerClient = null;
+        try {
+            // 创建 Docker 客户端
+            dockerClient = DockerClientBuilder.getInstance("tcp://8.134.202.187:2375").build();
+
+            // 列出所有容器，包括已停止的容器
+            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+            if (containers.isEmpty()) {
+                System.out.println("没有容器正在运行。");
+            } else {
+                for (Container container : containers) {
+                    System.out.println("Container ID: " + container.getId() + ", Names: " + String.join(", ", container.getNames()));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("无法连接到 Docker 守护进程，请检查连接设置和权限。");
+        }
+    }
+}
+```
+
+![Snipaste_2024-08-17_02-15-55](photo/Snipaste_2024-08-17_02-15-55.png)
+
+
+
+##### 4.常用操作
+
+###### （1）拉取镜像
+
+```java
+String image = "nginx:latest";
+PullImageCmd pullImageCmd = dockerClient.pullImageCmd(image);
+PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
+    @Override
+    public void onNext(PullResponseItem item) {
+        System.out.println("下载镜像：" + item.getStatus());
+        super.onNext(item);
+    }
+};
+pullImageCmd
+        .exec(pullImageResultCallback)
+        .awaitCompletion();
+System.out.println("下载完成");
+```
+
+
+
+###### （2）创建容器
+
+```java
+CreateContainerCmd containerCmd = dockerClient.createContainerCmd(image);
+CreateContainerResponse createContainerResponse = containerCmd
+        .withCmd("echo", "Hello Docker")
+        .exec();
+System.out.println(createContainerResponse);
+```
+
+
+
+###### （3）查看容器状态
+
+```java
+ListContainersCmd listContainersCmd = dockerClient.listContainersCmd();
+List<Container> containerList = listContainersCmd.withShowAll(true).exec();
+for (Container container : containerList) {
+    System.out.println(container);
+}
+```
+
+
+
+###### （4）启动容器
+
+```java
+dockerClient.startContainerCmd(containerId).exec();
+```
+
+
+
+###### （5）查看日志
+
+```java
+// 查看日志
+LogContainerResultCallback logContainerResultCallback = new LogContainerResultCallback() {
+    @Override
+    public void onNext(Frame item) {
+        System.out.println(item.getStreamType());
+        System.out.println("日志：" + new String(item.getPayload()));
+        super.onNext(item);
+    }
+};
+
+// 阻塞等待日志输出
+dockerClient.logContainerCmd(containerId)
+        .withStdErr(true)
+        .withStdOut(true)
+        .exec(logContainerResultCallback)
+        .awaitCompletion();
+```
+
+
+
+###### （6）删除容器
+
+```java
+dockerClient.removeContainerCmd(containerId).withForce(true).exec();
+```
+
+
+
+###### （7）删除镜像
+
+```java
+dockerClient.removeImageCmd(image).exec();
+```
+
+
+
+#### Docker 实现代码沙箱
+
+实现思路：docker 负责运行 java 程序，并且得到结果。
+
+
+
+##### 流程
+
+几乎和 Java 原生实现流程相同：
+
+1. 把用户的代码保存为文件
+
+2. 编译代码，得到 class 文件
+
+3. 把编译好的文件**上传到容器**环境内
+
+4. **在容器中执行**代码，得到输出结果
+
+5. 收集整理输出结果
+
+6. 文件清理，释放空间
+
+7. 错误处理，提升程序健壮性
+
+   
+
+> 扩展：模板方法设计模式（骨架类），定义同一套实现流程，让不同的子类去负责不同流程中的具体实现。执行步骤一样，每个步骤的实现方式不一样。
+
+
+
+### 创建容器，上传编译文件
+
+自定义容器的两种方式：
+
+1）在已有镜像的基础上再扩充：比如拉取现成的 Java 环境（包含 jdk），再把编译后的文件复制到容器里。适合新项目、跑通流程
+
+2）完全自定义容器：适合比较成熟的项目，比如封装多个语言的环境和实现
+
+
+
+思考：我们每个测试用例都单独创建一个容器，每个容器只执行一次 java 命令？
+
+浪费性能，所以要创建一个 **可交互** 的容器，能接受多次输入并且输出。
+
+创建容器时，可以指定文件路径（Volumn） **映射**，作用是把本地的文件同步到容器中，可以让容器访问。
+
+> 也可以叫容器挂载目录
+
+
+
 
 
 ## Bug 解决
