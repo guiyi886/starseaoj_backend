@@ -1869,7 +1869,7 @@ dockerClient.removeImageCmd(image).exec();
 
 
 
-### 创建容器，上传编译文件
+##### 创建容器，上传编译文件
 
 自定义容器的两种方式：
 
@@ -1886,6 +1886,49 @@ dockerClient.removeImageCmd(image).exec();
 创建容器时，可以指定文件路径（Volumn） **映射**，作用是把本地的文件同步到容器中，可以让容器访问。
 
 > 也可以叫容器挂载目录
+
+```java
+HostConfig hostConfig = new HostConfig();
+hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
+```
+
+
+
+##### 启动容器，执行代码
+
+###### 执行代码
+
+Docker 执行已启动容器命令：
+
+```shell
+ docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+```
+
+
+
+示例执行：
+
+```shell
+docker exec container_name java -cp /app Main 1 3
+```
+
+
+
+创建命令：把命令按照空格拆分，作为一个数组传递，否则可能会被识别为一个字符串，而不是多个参数。
+
+```java
+
+```
+
+
+
+执行命令，通过回调接口来获取程序的输出结果，并且通过 StreamType 来区分标准输出和错误输出。
+
+```java
+
+```
+
+尽量复用之前的 `ExecuteMessage` 对象，在异步接口中填充正常和异常信息，这样之后流程的代码都可以复用。
 
 
 
