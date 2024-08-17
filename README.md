@@ -1896,8 +1896,6 @@ hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文�
 
 ##### 启动容器，执行代码
 
-###### 执行代码
-
 Docker 执行已启动容器命令：
 
 ```shell
@@ -1909,7 +1907,7 @@ Docker 执行已启动容器命令：
 示例执行：
 
 ```shell
-docker exec container_name java -cp /app Main 1 3
+docker exec silly_kapitsa java -cp /app Main 1 3
 ```
 
 
@@ -1917,7 +1915,15 @@ docker exec container_name java -cp /app Main 1 3
 创建命令：把命令按照空格拆分，作为一个数组传递，否则可能会被识别为一个字符串，而不是多个参数。
 
 ```java
-
+String[] inputArgsArray = inputArgs.split(" ");
+String[] cmdArray = ArrayUtil.append(new String[]{"java", "-cp", "/app", "Main"}, inputArgsArray)
+ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
+        .withCmd(cmdArray)
+        .withAttachStderr(true)
+        .withAttachStdin(true)
+        .withAttachStdout(true)
+        .exec();
+System.out.println("创建执行命令：" + execCreateCmdResponse);
 ```
 
 
@@ -1925,10 +1931,106 @@ docker exec container_name java -cp /app Main 1 3
 执行命令，通过回调接口来获取程序的输出结果，并且通过 StreamType 来区分标准输出和错误输出。
 
 ```java
-
+String execId = execCreateCmdResponse.getId();
+ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() {
+    @Override
+    public void onNext(Frame frame) {
+        StreamType streamType = frame.getStreamType();
+        if (StreamType.STDERR.equals(streamType)) {
+            errorMessage[0] = new String(frame.getPayload());
+            System.out.println("输出错误结果：" + errorMessage[0]);
+        } else {
+            message[0] = new String(frame.getPayload());
+            System.out.println("输出结果：" + message[0]);
+        }
+        super.onNext(frame);
+    }
+};
+try {
+    dockerClient.execStartCmd(execId)
+            .exec(execStartResultCallback)
+            .awaitCompletion();
+} catch (InterruptedException e) {
+    System.out.println("程序执行异常");
+    throw new RuntimeException(e);
+}
 ```
 
 尽量复用之前的 `ExecuteMessage` 对象，在异步接口中填充正常和异常信息，这样之后流程的代码都可以复用。
+
+
+
+##### 获取程序执行时间
+
+和 Java 原生一样，使用 StopWatch 在执行前后统计时间。
+
+```java
+StopWatch stopWatch = new StopWatch();  // 计时
+long time = 0L;
+try {
+    stopWatch.start();
+    dockerClient.execStartCmd(execId)
+        .exec(execStartResultCallback)
+        .awaitCompletion();
+    stopWatch.stop();
+    time = stopWatch.getLastTaskTimeMillis();
+} catch (InterruptedException e) {
+    System.out.println("程序执行异常");
+    throw new RuntimeException(e);
+}
+```
+
+
+
+##### 获取程序占用内存
+
+程序占用的内存每个时刻都在变化，所以不可能获取到所有时间点的内存。
+
+但是可以定义一个周期，定期地获取程序的内存。
+
+Docker-Java 提供了内存定期统计的操作，示例代码如下：
+
+```java
+final long[] maxMemory = {0L};
+// 获取占用的内存
+StatsCmd statsCmd = dockerClient.statsCmd(containerId);
+ResultCallback<Statistics> statisticsResultCallback = statsCmd.exec(new ResultCallback<Statistics>() {
+    @Override
+    public void onNext(Statistics statistics) {
+        System.out.println("内存占用：" + statistics.getMemoryStats().getUsage());
+        maxMemory[0] = Math.max(statistics.getMemoryStats().getUsage(), maxMemory[0]);
+    }
+
+    @Override
+    public void close() throws IOException {
+    }
+
+    @Override
+    public void onStart(Closeable closeable) {
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+    }
+
+    @Override
+    public void onComplete() {
+    }
+});
+statsCmd.exec(statisticsResultCallback);
+```
+
+注意，程序执行完后要关闭统计命令：
+
+```java
+statsCmd.close()
+```
+
+
+
+#### Docker容器安全性
+
+
 
 
 
