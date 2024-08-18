@@ -23,7 +23,8 @@ public enum ErrorCode {
     // 系统内部错误，通常是服务器端发生未预期的错误
     SYSTEM_ERROR(50000, "系统内部异常"),
     // 操作失败，通常用于操作未成功但没有明确的错误类别
-    OPERATION_ERROR(50001, "操作失败");
+    OPERATION_ERROR(50001, "操作失败"),
+    API_REQUEST_ERROR(50010, "接口调用失败");
 
     /**
      * 状态码

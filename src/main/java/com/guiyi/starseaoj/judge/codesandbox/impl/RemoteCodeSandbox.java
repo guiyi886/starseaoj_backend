@@ -1,8 +1,13 @@
 package com.guiyi.starseaoj.judge.codesandbox.impl;
 
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONUtil;
+import com.guiyi.starseaoj.common.ErrorCode;
+import com.guiyi.starseaoj.exception.BusinessException;
 import com.guiyi.starseaoj.judge.codesandbox.CodeSandbox;
 import com.guiyi.starseaoj.judge.codesandbox.model.ExecuteCodeRequest;
 import com.guiyi.starseaoj.judge.codesandbox.model.ExecuteCodeResponse;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author guiyi
@@ -14,6 +19,16 @@ public class RemoteCodeSandbox implements CodeSandbox {
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
         System.out.println("远程代码沙箱");
-        return null;
+        String url = "http://localhost:8090/executeCode";
+        String json = JSONUtil.toJsonStr(executeCodeRequest);
+        String responseStr = HttpUtil.createPost(url)
+                .body(json)
+                .execute()
+                .body();
+        if (StringUtils.isBlank(responseStr)) {
+            throw new BusinessException(ErrorCode.API_REQUEST_ERROR,
+                    "调用远程代码沙箱出错，responseStr = " + responseStr);
+        }
+        return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
     }
 }

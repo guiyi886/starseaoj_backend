@@ -101,4 +101,4 @@ knife4j:
           - com.guiyi.starseaoj.controller
 # 代码沙箱配置
 codesandbox:
-  type: example
+  type: remote

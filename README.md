@@ -2404,6 +2404,81 @@ public List<ExecuteMessage> runFile(File userCodeFile, List<String> inputList) {
 
 
 
+##### 3.测试重构后的代码
+
+使用idea远程开发，在虚拟机上运行代码，测试docker实现的代码沙箱。
+
+docker代码沙箱运行正常，可以输出结果。
+
+![Snipaste_2024-08-18_21-12-12](photo/Snipaste_2024-08-18_21-12-12.png)
+
+
+
+#### 代码沙箱开放API
+
+直接在 controller 暴露 CodeSandbox 定义的接口：
+
+```java
+@Resource
+private JavaNativeCodeSandboxNew javaNativeCodeSandboxNew;
+
+/**
+ * 调用代码沙箱执行代码
+ *
+ * @param executeCodeRequest
+ * @return
+ */
+@PostMapping("/executeCode")
+public ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest) {
+    if (executeCodeRequest == null) {
+        throw new RuntimeException("请求参数为空");
+    }
+    return javaNativeCodeSandboxNew.executeCode(executeCodeRequest);
+}
+```
+
+
+
+并且实现oj平台的后端实现远程代码沙箱调用类 RemoteCodeSandbox，使用hutool 工具的HttpUtil类发送post请求。
+
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/11 下午4:04:24
+ * @ClassName com.guiyi.starseaoj.judge.codesandbox.impl.CodeSandboxImpl
+ * @function --> 远程代码沙箱（实际调用接口的沙箱）
+ */
+public class RemoteCodeSandbox implements CodeSandbox {
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        System.out.println("远程代码沙箱");
+        String url = "http://localhost:8090/executeCode";
+        String json = JSONUtil.toJsonStr(executeCodeRequest);
+        String responseStr = HttpUtil.createPost(url)
+                .body(json)
+                .execute()
+                .body();
+        if (StringUtils.isBlank(responseStr)) {
+            throw new BusinessException(ErrorCode.API_REQUEST_ERROR,
+                    "调用远程代码沙箱出错，responseStr = " + responseStr);
+        }
+        return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
+    }
+}
+```
+
+
+
+注意前面用到**策略模式**，并将代码沙箱类型参数 type 写到 application.yml 中，因此要将 type 改为 remote。
+
+```yaml
+# 代码沙箱配置
+codesandbox:
+  type: remote
+```
+
+
+
 
 
 
