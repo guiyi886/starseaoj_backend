@@ -2173,6 +2173,235 @@ Docker 容器已经做了系统层面的隔离，比较安全，但不能保证�
 
 ### 七、项目优化
 
+#### 模板方法优化代码沙箱
+
+模板方法：定义一套通用的执行流程，让子类负责每个执行步骤的具体实现
+
+模板方法的适用场景：适用于有规范的流程，且执行流程可以复用
+
+作用：大幅节省重复代码量，便于项目扩展、更好维护
+
+##### 1. 抽象出具体的流程
+
+定义一个模板方法抽象类。
+
+先复制具体的实现类，把代码从完整的方法抽离成一个一个子写法。
+
+```java
+public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+    List<String> inputList = executeCodeRequest.getInputList();
+    String code = executeCodeRequest.getCode();
+
+    // 1.隔离存放用户代码
+    File userCodeFile = saveCodeToFile(code);
+
+    // 2.编译命令
+    ExecuteMessage complieExecuteMessage = compileFile(userCodeFile);
+    System.out.println(complieExecuteMessage);
+
+    // 3.运行程序
+    List<ExecuteMessage> executeMessageList = runFile(userCodeFile, inputList);
+
+    // 4.整理输出结果
+    ExecuteCodeResponse executeCodeResponse = getOutputResponse(executeMessageList);
+
+    // 5.文件清理
+    boolean isDel = deleteFile(userCodeFile);
+    if (!isDel) {
+        log.error("删除文件路径{}失败", userCodeFile.getAbsolutePath());
+    }
+
+    return executeCodeResponse;
+}
+```
+
+
+
+##### 2. 定义子类的具体实现
+
+Java 原生代码沙箱实现，直接复用模板方法定义好的方法实现：
+
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/18 下午8:44:25
+ * @ClassName com.starseaoj.starseaojcodesandbox.codesandbox.JavaNativeCodeSandboxNew
+ * @function --> java代码沙箱模板实现
+ */
+public class JavaNativeCodeSandboxNew extends JavaCodeSandboxTemplate {
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        return super.executeCode(executeCodeRequest);
+    }
+}
+```
+
+
+
+Docker 代码沙箱实现，只需要重写 RunFile 方法：
+
+```java
+/**
+ * 创建容器并执行代码
+ *
+ * @param userCodeFile
+ * @param inputList
+ * @return
+ */
+@Override
+public List<ExecuteMessage> runFile(File userCodeFile, List<String> inputList) {
+    // 3.创建容器，复制文件到其中
+    // 创建 Docker 客户端
+    DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+
+    // 判断镜像是否存在
+    if (!checkImageExists(dockerClient, IMAGE_NAME)) {
+        PullImageCmd pullImageCmd = dockerClient.pullImageCmd(IMAGE_NAME);
+        PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
+            @Override
+            public void onNext(PullResponseItem item) {
+                System.out.println("下载镜像：" + item.getStatus());
+                super.onNext(item);
+            }
+        };
+        try {
+            pullImageCmd
+                    .exec(pullImageResultCallback)
+                    .awaitCompletion();
+        } catch (InterruptedException e) {
+            System.out.println("拉取镜像异常");
+            throw new RuntimeException(e);
+        }
+        System.out.println("下载镜像openjdk:8-alpine完成");
+    }
+
+    // 判断容器是否存在
+    // 注意容器不可复用，因为每次的挂载目录都不同，且docker 不支持直接修改已经创建的容器的挂载目录。
+    // 因此只能删除后重新创建容器并挂载目录。
+    if (checkContainerExists(dockerClient, CONTAINER_NAME)) {
+        // 先停止并删除旧容器
+        dockerClient.removeContainerCmd(CONTAINER_NAME).withForce(true).exec();
+    }
+    // 创建容器
+    CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
+    HostConfig hostConfig = new HostConfig();
+    hostConfig.withMemory(100 * 1000 * 1000L);
+    hostConfig.withMemorySwap(0L);
+    hostConfig.withCpuCount(1L);
+    String userCodeParentPath = userCodeFile.getParentFile().getAbsolutePath();
+    hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
+    // 配置seccomp
+    String profileConfig = ResourceUtil.readUtf8Str("seccomp/profile.json");
+    hostConfig.withSecurityOpts(Arrays.asList("seccomp=" + profileConfig));
+
+    CreateContainerResponse createContainerResponse = containerCmd
+            .withName(CONTAINER_NAME)    // 设置容器名称
+            .withHostConfig(hostConfig)
+            .withNetworkDisabled(true)  // 禁用网络
+            .withReadonlyRootfs(true)   // 禁止向root根目录写文件
+            .withAttachStdin(true)  // 与本地终端连接
+            .withAttachStderr(true)
+            .withAttachStdout(true)
+            .withTty(true)  // 创建交互终端
+            .exec();
+    // 启动容器
+    dockerClient.startContainerCmd(CONTAINER_NAME).exec();
+
+    // 4.在容器中执行代码，得到输出结果
+    // docker exec java8_container java -cp /app Main 1 3
+    // 执行命令并获取结果
+    List<ExecuteMessage> executeMessageList = new ArrayList<>();
+    for (String inputArgs : inputList) {
+        String[] inputArgsArray = inputArgs.split(" ");
+        String[] cmdArray = ArrayUtil.append(new String[]{"java", "-cp", "/app", "Main"}, inputArgsArray);
+        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(CONTAINER_NAME)
+                .withCmd(cmdArray)
+                .withAttachStderr(true)
+                .withAttachStdin(true)
+                .withAttachStdout(true)
+                .exec();
+        System.out.println("创建执行命令：" + execCreateCmdResponse);
+
+        final String[] message = {null};
+        final String[] errorMessage = {null};
+        final boolean[] timeout = {true}; // 超时标志
+        ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() {
+            @Override
+            public void onComplete() {
+                // 如果执行完成，设置为false表示未超时
+                timeout[0] = false;
+                super.onComplete();
+            }
+
+            @Override
+            public void onNext(Frame frame) {
+                StreamType streamType = frame.getStreamType();
+                if (StreamType.STDERR.equals(streamType)) {
+                    errorMessage[0] = new String(frame.getPayload());
+                    System.out.println("输出错误结果：" + errorMessage[0]);
+                } else {
+                    message[0] = new String(frame.getPayload());
+                    System.out.println("输出结果：" + message[0]);
+                }
+                super.onNext(frame);
+            }
+        };
+
+        final long[] maxMemory = {0L};
+        // 获取占用的内存
+        StatsCmd statsCmd = dockerClient.statsCmd(CONTAINER_NAME);
+        ResultCallback<Statistics> statisticsResultCallback = statsCmd.exec(new ResultCallback<Statistics>() {
+            @Override
+            public void onNext(Statistics statistics) {
+                System.out.println("内存占用：" + statistics.getMemoryStats().getUsage());
+                maxMemory[0] = Math.max(statistics.getMemoryStats().getUsage(), maxMemory[0]);
+            }
+
+            @Override
+            public void close() throws IOException {
+            }
+
+            @Override
+            public void onStart(Closeable closeable) {
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
+        statsCmd.exec(statisticsResultCallback);
+
+        String execId = execCreateCmdResponse.getId();  // 获取容器id
+        StopWatch stopWatch = new StopWatch();  // 计时
+        long time = 0L;
+        try {
+            stopWatch.start();
+            dockerClient.execStartCmd(execId)
+                    .exec(execStartResultCallback)
+                    .awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);  // 设置超时时间
+            stopWatch.stop();
+            time = stopWatch.getLastTaskTimeMillis();
+
+            statsCmd.close();   // 执行完后关闭统计命令
+        } catch (InterruptedException e) {
+            System.out.println("程序执行异常");
+            throw new RuntimeException(e);
+        }
+        ExecuteMessage executeMessage = new ExecuteMessage();
+        executeMessage.setMessage(message[0]);
+        executeMessage.setErrorMessage(errorMessage[0]);
+        executeMessage.setTime(time);
+        executeMessage.setMemory(maxMemory[0]);
+        executeMessageList.add(executeMessage);
+    }
+    return executeMessageList;
+}
+```
+
 
 
 
