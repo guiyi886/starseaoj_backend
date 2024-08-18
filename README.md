@@ -71,9 +71,13 @@
 
 Java 进程控制、Java 安全管理器、部分 JVM 知识点
 
-虚拟机（云服务器）、Docker（代码沙箱实现）
+虚拟机、Docker（代码沙箱实现）
 
-Spring Cloud 微服务 、消息队列、多种设计模式
+Spring Boot、Mybatis Plus、mysql
+
+Spring Cloud 微服务 、消息队列、redis
+
+多种设计模式（工厂模式、策略模式、代理模式、模板模式、建造器模式）
 
 
 
@@ -2032,6 +2036,143 @@ statsCmd.close()
 
 #### Docker容器安全性
 
+##### 超时控制
+
+执行容器时，可以增加超时参数控制值：
+
+```java
+dockerClient.execStartCmd(execId)
+    .exec(execStartResultCallback)
+    .awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);  // 设置超时时间
+```
+
+但是，这种方式无论超时与否，容器都会往下执行，无法判断代码运行是否超时。
+
+
+
+解决方案：定义一个标志，如果程序执行完成，把超时标志设置为 false。
+
+```java
+final boolean[] timeout = {true}; // 超时标志
+ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() {
+    @Override
+    public void onComplete() {
+        // 如果执行完成，设置为false表示未超时
+        timeout[0] = false;
+        super.onComplete();
+    }
+
+    @Override
+    public void onNext(Frame frame) {
+        StreamType streamType = frame.getStreamType();
+        if (StreamType.STDERR.equals(streamType)) {
+            errorMessage[0] = new String(frame.getPayload());
+            System.out.println("输出错误结果：" + errorMessage[0]);
+        } else {
+            message[0] = new String(frame.getPayload());
+            System.out.println("输出结果：" + message[0]);
+        }
+        super.onNext(frame);
+    }
+};
+```
+
+
+
+##### 内存资源
+
+通过 HostConfig 的 withMemory 等方法，设置容器的最大内存和资源限制。
+
+```java
+// 创建容器
+CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
+HostConfig hostConfig = new HostConfig();
+hostConfig.withMemory(100 * 1000 * 1000L);
+hostConfig.withMemorySwap(0L);
+hostConfig.withCpuCount(1L);
+hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
+
+CreateContainerResponse createContainerResponse = containerCmd
+                .withName(CONTAINER_NAME)    // 设置容器名称
+                .withHostConfig(hostConfig)
+                .withAttachStdin(true)  // 与本地终端连接
+                .withAttachStderr(true)
+                .withAttachStdout(true)
+                .withTty(true)  // 创建交互终端
+                .exec();
+```
+
+
+
+##### 网络资源
+
+创建容器时，设置网络配置为关闭。
+
+```java
+CreateContainerResponse createContainerResponse = containerCmd
+        .withName(CONTAINER_NAME)    // 设置容器名称
+        .withHostConfig(hostConfig)
+        .withNetworkDisabled(true)	// 禁用网络
+        .withAttachStdin(true)  // 与本地终端连接
+        .withAttachStderr(true)
+        .withAttachStdout(true)
+        .withTty(true)  // 创建交互终端
+        .exec();
+```
+
+
+
+##### 权限管理
+
+Docker 容器已经做了系统层面的隔离，比较安全，但不能保证绝对安全。
+
+1. 结合 Java 安全管理器和其他策略去使用
+
+2. 限制用户不能向 root 根目录写文件
+
+   ```java
+   CreateContainerResponse createContainerResponse = containerCmd
+           .withName(CONTAINER_NAME)    // 设置容器名称
+           .withHostConfig(hostConfig)
+           .withNetworkDisabled(true)  // 禁用网络
+           .withReadonlyRootfs(true)   // 禁止向root根目录写文件
+           .withAttachStdin(true)  // 与本地终端连接
+           .withAttachStderr(true)
+           .withAttachStdout(true)
+           .withTty(true)  // 创建交互终端
+           .exec();
+   ```
+
+3. Linux 自带的一些安全管理措施，比如 seccomp（Secure Computing Mode），一个用于 Linux 内核的安全功能，允许限制进程可以执行的系统调用，从而减少潜在的攻击面和提高容器的安全性。通过配置 seccomp，可以控制容器内进程可以使用的系统调用类型和参数。
+
+   seccomp 配置文件 profile.json 示例和配置方法：
+
+   ```json
+   {
+     "defaultAction": "SCMP_ACT_ALLOW",
+     "syscalls": [
+       {
+         "name": "write",
+         "action": "SCMP_ACT_ALLOW"
+       },
+       {
+         "name": "read",
+         "action": "SCMP_ACT_ALLOW"
+       }
+     ]
+   }
+   ```
+
+   ```java
+   // 配置seccomp
+   String profileConfig = ResourceUtil.readUtf8Str("seccomp/profile.json");
+   hostConfig.withSecurityOpts(Arrays.asList("seccomp=" + profileConfig));
+   ```
+
+
+
+### 七、项目优化
+
 
 
 
@@ -2150,3 +2291,44 @@ String projectRoot = file.getParentFile().getParentFile().getPath();
 ```shell
 javac -encoding utf-8 -source 1.8 -target 1.8  MySecurityManager.java
 ```
+
+
+
+### 8.第一次创建容器时可以正常运行并输出代码结果，之后都会错误。
+
+```java
+// 创建容器
+CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
+HostConfig hostConfig = new HostConfig();
+hostConfig.withMemory(100 * 1000 * 1000L);
+hostConfig.withCpuCount(1L);
+hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
+
+CreateContainerResponse createContainerResponse = containerCmd
+        .withName(CONTAINER_NAME)    // 设置容器名称
+        .withHostConfig(hostConfig)
+        .withAttachStdin(true)  // 与本地终端连接
+        .withAttachStderr(true)
+        .withAttachStdout(true)
+        .withTty(true)  // 创建交互终端
+        .exec();
+// 启动容器
+dockerClient.startContainerCmd(CONTAINER_NAME).exec();
+```
+
+
+
+分析：观测代码发现创建容器中的文件路径映射部分有问题，因为每次带代码路径userCodeParentPath都不同，而挂载目录永远都是第一次的。
+
+解决方法：由于docker 不支持直接修改已经创建的容器的挂载目录。因此只能删除后重新创建容器并挂载目录。
+
+```java
+// 判断容器是否存在
+// 注意容器不可复用，因为每次的挂载目录都不同，且docker 不支持直接修改已经创建的容器的挂载目录。
+// 因此只能删除后重新创建容器并挂载目录。
+if (checkContainerExists(dockerClient, CONTAINER_NAME)) {
+    // 先停止并删除旧容器
+    dockerClient.removeContainerCmd(CONTAINER_NAME).withForce(true).exec();
+}
+```
+
