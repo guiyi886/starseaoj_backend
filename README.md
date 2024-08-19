@@ -2575,6 +2575,146 @@ public class RemoteCodeSandbox implements CodeSandbox {
 
 
 
+### 八、单体项目改造为微服务
+
+#### 什么是微服务？
+
+服务：提供某类功能的代码
+
+微服务：专注于提供某类特定功能的代码，而不是把所有的代码全部放到同一个项目里。会把整个大的项目按照一定的功能、逻辑进行拆分，拆分为多个子模块，每个子模块可以独立运行、独立负责一类功能，子模块之间相互调用、互不影响。
+
+微服务的几个重要的实现因素：服务管理、服务调用、服务拆分
+
+
+
+#### 微服务实现技术？
+
+Spring Cloud
+
+**Spring Cloud Alibaba（本项目采用）**
+
+Dubbo（DubboX）
+
+RPC（GRPC、TRPC）
+
+本质上是通过 HTTP、或者其他的网络协议进行通讯来实现的。
+
+
+
+#### Spring Cloud Alibaba
+
+中文文档：https://sca.aliyun.com/zh-cn/
+
+注意选择适配的Spring Cloud Alibaba 版本！
+
+本质：是在 Spring Cloud 的基础上，进行了增强，补充了一些额外的能力，根据阿里多年的业务沉淀做了一些定制化的开发
+
+1. Spring Cloud Gateway：网关
+2. Nacos：服务注册和配置中心
+3. Sentinel：熔断限流
+4. Seata：分布式事务
+5. RocketMQ：消息队列，削峰填谷
+6. Docker：使用Docker进行容器化部署
+7. Kubernetes：使用k8s进行容器化部署
+
+![Snipaste_2024-08-19_16-09-45](photo/Snipaste_2024-08-19_16-09-45.png)
+
+
+
+Nacos：集中存管项目中所有服务的信息，便于服务之间找到彼此；同时，还支持集中存储整个项目中的配置。
+
+![Snipaste_2024-08-19_16-53-17](photo/Snipaste_2024-08-19_16-53-17.png)
+
+
+
+#### 改造前思考
+
+从业务需求出发，思考单机和分布式的区别。
+
+用户登录功能：需要改造为分布式登录
+
+其他内容：
+
+- 有没有用到单机的锁？改造为分布式锁
+- 有没有用到本地缓存？改造为分布式缓存（Redis）
+- 需不需要用到分布式事务？比如操作多个库
+
+
+
+#### 改造分布式登录
+
+##### 1.docker拉取redis镜像并创建redis容器，application.yml 增加 redis 配置
+
+新建/root/redis/redis.conf文件，内容为user root on >guiyi886 ~* +@all，设置用户名和密码，并使用-v覆盖redis容器配置文件。
+
+```shell
+docker pull redis
+docker run --name redis -p 6379:6379 -v /root/redis/redis.conf:/usr/local/etc/redis/redis.conf -d redis redis-server /usr/local/etc/redis/redis.conf
+```
+
+```yaml
+# Redis 配置
+redis:
+  database: 1
+  host: 8.134.202.187
+  port: 6379
+  timeout: 5000
+  password: guiyi886
+```
+
+
+
+##### 2.添加依赖：
+
+```xml
+<!-- redis -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.session</groupId>
+    <artifactId>spring-session-data-redis</artifactId>
+</dependency>
+```
+
+
+
+##### 3.主类取消 Redis 自动配置的移除
+
+```java
+@SpringBootApplication(exclude = {RedisAutoConfiguration.class})
+```
+
+```java
+@SpringBootApplication
+```
+
+
+
+##### 4.修改 session 存储方式：
+
+```yaml
+spring:
+  session:
+    store-type: redis
+```
+
+
+
+##### 5.进入容器后，使用 redis-cli 或者 redis 管理工具，查看是否有登录后的信息。
+
+```shell
+docker exec -it redis bash
+redis-cli
+```
+
+
+
+#### 微服务的划分
+
+
+
 
 
 
