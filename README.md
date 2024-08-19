@@ -2416,7 +2416,7 @@ docker代码沙箱运行正常，可以输出结果。
 
 #### 代码沙箱开放API
 
-直接在 controller 暴露 CodeSandbox 定义的接口：
+##### 在控制层实现调用接口
 
 ```java
 @Resource
@@ -2439,7 +2439,7 @@ public ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCo
 
 
 
-并且实现oj平台的后端实现远程代码沙箱调用类 RemoteCodeSandbox，使用hutool 工具的HttpUtil类发送post请求。
+并且实现 OJ 平台后端的远程代码沙箱调用类 RemoteCodeSandbox，使用 hutool 工具的 HttpUtil 类发送 post 请求。
 
 ```java
 /**
@@ -2478,6 +2478,98 @@ codesandbox:
 ```
 
 
+
+##### API调用鉴权
+
+如果服务不做任何的权限校验，直接发到公网，是不安全的。
+
+###### 1.调用方与服务提供方之间约定一个字符串 **（最好加密）**
+
+优点：实现最简单，比较适合内部系统之间相互调用（相对可信的环境内部调用）
+
+缺点：不够灵活，如果 key 泄露或变更，需要重启代码
+
+代码沙箱服务：从请求头中获取认证信息，并校验。
+
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/13 上午12:17:59
+ * @ClassName com.starseaoj.starseaojcodesandbox.controller.MainController
+ * @function --> 控制层
+ */
+@RestController
+public class MainController {
+    // 定义鉴权请求头和密钥
+    private static final String AUTH_REQUEST_HEADER = "auth";
+
+    private static final String AUTH_REQUEST_SECRET = "secretKey";
+
+    @Resource
+    private JavaNativeCodeSandboxNew javaNativeCodeSandboxNew;
+    
+    /**
+     * 调用代码沙箱执行代码
+     *
+     * @param executeCodeRequest
+     * @return
+     */
+    @PostMapping("/executeCode")
+    public ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest,
+                                           HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader(AUTH_REQUEST_HEADER);
+        if (!AUTH_REQUEST_SECRET.equals(authHeader)) {
+            response.setStatus(403);
+            return null;
+        }
+
+        if (executeCodeRequest == null) {
+            throw new RuntimeException("请求参数为空");
+        }
+        return javaNativeCodeSandboxNew.executeCode(executeCodeRequest);
+    }
+}
+```
+
+
+
+调用方：在调用时补充请求头。
+
+```java
+/**
+ * @author guiyi
+ * @Date 2024/8/11 下午4:04:24
+ * @ClassName com.guiyi.starseaoj.judge.codesandbox.impl.CodeSandboxImpl
+ * @function --> 远程代码沙箱（实际调用接口的沙箱）
+ */
+public class RemoteCodeSandbox implements CodeSandbox {
+    // 定义鉴权请求头和密钥
+    private static final String AUTH_REQUEST_HEADER = "auth";
+
+    private static final String AUTH_REQUEST_SECRET = "secretKey";
+
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        System.out.println("远程代码沙箱");
+        String url = "http://localhost:8090/executeCode";
+        String json = JSONUtil.toJsonStr(executeCodeRequest);
+        String responseStr = HttpUtil.createPost(url)
+                .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)
+                .body(json)
+                .execute()
+                .body();
+        if (StringUtils.isBlank(responseStr)) {
+            throw new BusinessException(ErrorCode.API_REQUEST_ERROR,
+                    "调用远程代码沙箱出错，responseStr = " + responseStr);
+        }
+        return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
+    }
+}
+```
+
+###### 2.API 签名认证
+
+给允许调用的人员分配 accessKey、secretKey，然后校验这两组 key 是否匹配
 
 
 
