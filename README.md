@@ -2805,7 +2805,21 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 
 
 
-#### 3.公用接口模块：只存放接口，不存放实现（多个服务之间要共享）
+#### 3.公共接口模块 service_client：只存放接口，不存放实现（多个服务之间要共享）
+
+先搬运所有的 service，judgeService 也需要搬运。
+
+![Snipaste_2024-08-20_23-21-21](photo/Snipaste_2024-08-20_23-21-21.png)
+
+openfeign需要添加版本：
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+    <version>3.1.5</version>
+</dependency>
+```
 
 
 
