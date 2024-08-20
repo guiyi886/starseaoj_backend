@@ -2823,6 +2823,113 @@ openfeign需要添加版本：
 
 
 
+#### 4.具体业务服务实现
+
+给三个业务服务模块（user、question、judge）和网关引入公共依赖：
+
+```xml
+<dependency>
+    <groupId>com.starseaoj</groupId>
+    <artifactId>starseaoj_backend_common</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+<dependency>
+    <groupId>com.starseaoj</groupId>
+    <artifactId>starseaoj_backend_model</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+<dependency>
+    <groupId>com.starseaoj</groupId>
+    <artifactId>starseaoj_backend_service_client</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+
+
+再添加配置文件application.yml：
+
+```yaml
+# 公共配置文件
+spring:
+  application:
+    name: starseaoj_backend_user_service
+  # 默认 dev 环境
+  profiles:
+    active: dev
+  # 支持 swagger3
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  # session 配置
+  session:
+    store-type: redis
+    # 30 天过期
+    timeout: 2592000
+  # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://8.134.202.187:3306/staroj
+    username: root
+    password: guiyi886
+  # Redis 配置
+  redis:
+    database: 1
+    host: 8.134.202.187
+    port: 6379
+    timeout: 5000
+    # username: root
+    # password: guiyi886
+server:
+  address: localhost
+  port: 8102
+  servlet:
+    context-path: /api
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
+      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+# 接口文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: "接口文档"
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.starseaoj.userservice.controller
+# 代码沙箱配置
+codesandbox:
+  type: remote
+```
+
+
+
+若启动子模块时报错nacos配置问题，可以先将父模块pom.xml的nacos依赖注释掉！
+
+
+
+![Snipaste_2024-08-21_01-49-30](photo/Snipaste_2024-08-21_01-49-30.png)
+
+
+
+
+
+
+
+
+
 
 
 
