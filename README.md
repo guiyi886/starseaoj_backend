@@ -2641,7 +2641,7 @@ Nacos：集中存管项目中所有服务的信息，便于服务之间找到彼
 
 
 
-#### 改造分布式登录
+#### 改造分布式登录（redis）
 
 ##### 1.docker拉取redis镜像并创建redis容器，application.yml 增加 redis 配置
 
@@ -2712,6 +2712,116 @@ redis-cli
 
 
 #### 微服务的划分
+
+依赖服务：
+
+- 注册中心：Nacos
+- 微服务网关（starseaoj_backend_gateway）：Gateway 聚合所有的接口，统一接受处理前端的请求
+
+
+
+公共模块：
+
+- common 公共模块（starseaoj_backend_common）：全局异常处理器、请求响应封装类、公用的工具类等
+- model 模型模块（starseaoj_backend_model）：很多服务公用的实体类
+- 公用接口模块（starseaoj_backend-service_client）：只存放接口，不存放实现（多个服务之间要共享）
+
+
+
+业务功能：
+
+1. 用户服务（starseaoj_backend_user_service：8102 端口）：
+   1. 注册（后端已实现）
+   2. 登录（后端已实现，前端已实现）
+   3. 用户管理
+2. 题目服务（yuoj_backend_question_service：8103）
+   1. 创建题目（管理员）
+   2. 删除题目（管理员）
+   3. 修改题目（管理员）
+   4. 搜索题目（用户）
+   5. 在线做题（题目详情页）
+   6. **题目提交**
+3. 判题服务（yuoj_backend_judge_service，8104 端口，较重的操作）
+   1. 执行判题逻辑
+   2. 错误处理（内存溢出、安全性、超时）
+   3. **自主实现** 代码沙箱（安全沙箱）
+   4. 开放接口（提供一个独立的新服务）
+
+> 代码沙箱服务本身就是独立的，不用纳入 Spring Cloud 的管理
+
+
+
+#### 路由划分
+
+用 springboot 的 context-path 统一修改各项目的接口前缀，比如：
+
+用户服务：
+
+- /api/user
+- /api/user/inner（内部调用，网关层面要做限制）
+
+题目服务：
+
+- /api/question（也包括题目提交信息）
+- /api/question/inner（内部调用，网关层面要做限制）
+
+判题服务：
+
+- /api/judge
+- /api/judge/inner（内部调用，网关层面要做限制）
+
+
+
+### Nacos 注册中心启动
+
+选择 2.2.0 版本！！！执行以下命令创建容器后打开http://localhost:8848/nacos/index.html即可看到管理界面。
+
+```shell
+docker pull nacos/nacos-server:2.2.0
+docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:9849 nacos/nacos-server:v2.2.0
+```
+
+
+
+### 创建项目和模块
+
+按照前面的划分进行模块的创建。
+
+![Snipaste_2024-08-20_10-08-27](photo/Snipaste_2024-08-20_10-08-27.png)
+
+
+
+在父模块starseaoj_backend_microservice的pom.xml文件中添加子模块名称。
+
+```xml
+<modules>
+    <module>starseaoj_backend_common</module>
+    <module>starseaoj_backend_gateway</module>
+    <module>starseaoj_backend_judge_service</module>
+    <module>starseaoj_backend_model</module>
+    <module>starseaoj_backend_question_service</module>
+    <module>starseaoj_backend_service_client</module>
+    <module>starseaoj_backend_user_service</module>
+</modules>
+```
+
+
+
+在每个子模块中添加上父模块的声明。
+
+```xml
+<parent>
+    <groupId>com.starseaoj</groupId>
+    <artifactId>starseaoj_backend_microservice</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</parent>
+```
+
+
+
+最终右侧maven划分如下所示
+
+![Snipaste_2024-08-20_10-25-05](photo/Snipaste_2024-08-20_10-25-05.png)
 
 
 
