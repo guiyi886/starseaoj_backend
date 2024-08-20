@@ -2774,7 +2774,7 @@ redis-cli
 
 ### Nacos 注册中心启动
 
-选择 2.2.0 版本！！！执行以下命令创建容器后打开http://localhost:8848/nacos/index.html即可看到管理界面。
+选择 2.2.0 版本！！！执行以下命令创建容器后打开http://localhost:8848/nacos/index.html 即可看到管理界面。
 
 ```shell
 docker pull nacos/nacos-server:2.2.0
