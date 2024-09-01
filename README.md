@@ -1,5 +1,3 @@
-
-
 ## 一、项目规划
 
 ### 实现核心
@@ -39,20 +37,20 @@
 ### 功能模块
 
 1. 用户模块
-   1. 注册
-   2. 登录
+    1. 注册
+    2. 登录
 2. 题目模块
-   1. 创建题目（管理员）
-   2. 删除题目（管理员）
-   3. 修改题目（管理员）
-   4. 搜索题目（用户）
-   5. 在线做题
-   6. 提交题目代码
+    1. 创建题目（管理员）
+    2. 删除题目（管理员）
+    3. 修改题目（管理员）
+    4. 搜索题目（用户）
+    5. 在线做题
+    6. 提交题目代码
 3. 判题模块
-   1. 提交判题（结果是否正确与错误）
-   2. 错误处理（内存溢出、安全性、超时）
-   3. **自主实现代码沙箱**（安全沙箱）
-   4. 开放接口（提供一个独立的新服务）
+    1. 提交判题（结果是否正确与错误）
+    2. 错误处理（内存溢出、安全性、超时）
+    3. **自主实现代码沙箱**（安全沙箱）
+    4. 开放接口（提供一个独立的新服务）
 
 ### 项目扩展思路
 
@@ -88,19 +86,19 @@ Spring Cloud 微服务 、消息队列、redis
 -- 用户表
 create table if not exists user
 (
-   id           bigint auto_increment comment 'id' primary key,
-   userAccount  varchar(256)                           not null comment '账号',
-   userPassword varchar(512)                           not null comment '密码',
-   unionId      varchar(256)                           null comment '微信开放平台id',
-   mpOpenId     varchar(256)                           null comment '公众号openId',
-   userName     varchar(256)                           null comment '用户昵称',
-   userAvatar   varchar(1024)                          null comment '用户头像',
-   userProfile  varchar(512)                           null comment '用户简介',
-   userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin/ban',
-   createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
-   updateTime   datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-   isDelete     tinyint      default 0                 not null comment '是否删除',
-   index idx_unionId (unionId)
+    id           bigint auto_increment comment 'id' primary key,
+    userAccount  varchar(256)                           not null comment '账号',
+    userPassword varchar(512)                           not null comment '密码',
+    unionId      varchar(256)                           null comment '微信开放平台id',
+    mpOpenId     varchar(256)                           null comment '公众号openId',
+    userName     varchar(256)                           null comment '用户昵称',
+    userAvatar   varchar(1024)                          null comment '用户头像',
+    userProfile  varchar(512)                           null comment '用户简介',
+    userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin/ban',
+    createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime   datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    isDelete     tinyint      default 0                 not null comment '是否删除',
+    index idx_unionId (unionId)
 ) comment '用户' collate = utf8mb4_unicode_ci;
 ```
 
@@ -122,14 +120,14 @@ judgeCase 判题用例（json 数组）：一个输入用例和一个输出用�
 
 ```json
 [
-   {
-      "input": "1 2",
-      "output": "3 4"
-   },
-   {
-      "input": "1 3",
-      "output": "2 4"
-   }
+  {
+    "input": "1 2",
+    "output": "3 4"
+  },
+  {
+    "input": "1 3",
+    "output": "2 4"
+  }
 ]
 ```
 
@@ -143,22 +141,22 @@ judgeCase 判题用例（json 数组）：一个输入用例和一个输出用�
 -- 题目表
 create table if not exists question
 (
-   id          bigint auto_increment comment 'id' primary key,
-   title       varchar(512)                       null comment '标题',
-   content     text                               null comment '内容',
-   tags        varchar(1024)                      null comment '标签列表（json 数组）',
-   answer      text                               null comment '题目答案',
-   submitNum   int      default 0                 not null comment '题目提交数',
-   acceptedNum int      default 0                 not null comment '题目通过数',
-   judgeCase   text                               null comment '判题用例（json 数组）',
-   judgeConfig text                               null comment '判题配置（json 对象）',
-   thumbNum    int      default 0                 not null comment '点赞数',
-   favourNum   int      default 0                 not null comment '收藏数',
-   userId      bigint                             not null comment '创建用户 id',
-   createTime  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-   updateTime  datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-   isDelete    tinyint  default 0                 not null comment '是否删除',
-   index idx_userId (userId)
+    id          bigint auto_increment comment 'id' primary key,
+    title       varchar(512)                       null comment '标题',
+    content     text                               null comment '内容',
+    tags        varchar(1024)                      null comment '标签列表（json 数组）',
+    answer      text                               null comment '题目答案',
+    submitNum   int      default 0                 not null comment '题目提交数',
+    acceptedNum int      default 0                 not null comment '题目通过数',
+    judgeCase   text                               null comment '判题用例（json 数组）',
+    judgeConfig text                               null comment '判题配置（json 对象）',
+    thumbNum    int      default 0                 not null comment '点赞数',
+    favourNum   int      default 0                 not null comment '收藏数',
+    userId      bigint                             not null comment '创建用户 id',
+    createTime  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime  datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    isDelete    tinyint  default 0                 not null comment '是否删除',
+    index idx_userId (userId)
 ) comment '题目' collate = utf8mb4_unicode_ci;
 ```
 
@@ -168,11 +166,11 @@ judgeInfo（json 对象）
 
 ```json
 {
-   "message": "程序执行信息",
-   "time": 1000,
-   // 单位为 ms
-   "memory": 1000
-   // 单位为 kb
+  "message": "程序执行信息",
+  "time": 1000,
+  // 单位为 ms
+  "memory": 1000
+  // 单位为 kb
 }
 ```
 
@@ -194,18 +192,18 @@ judgeInfo（json 对象）
 -- 题目提交表
 create table if not exists question_submit
 (
-   id         bigint auto_increment comment 'id' primary key,
-   language   varchar(128)                       not null comment '编程语言',
-   code       text                               not null comment '用户代码',
-   judgeInfo  text                               null comment '判题信息（json 对象）',
-   status     int      default 0                 not null comment '判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）',
-   questionId bigint                             not null comment '题目 id',
-   userId     bigint                             not null comment '创建用户 id',
-   createTime datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-   updateTime datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-   isDelete   tinyint  default 0                 not null comment '是否删除',
-   index idx_questionId (questionId),
-   index idx_userId (userId)
+    id         bigint auto_increment comment 'id' primary key,
+    language   varchar(128)                       not null comment '编程语言',
+    code       text                               not null comment '用户代码',
+    judgeInfo  text                               null comment '判题信息（json 对象）',
+    status     int      default 0                 not null comment '判题状态（0 - 待判题、1 - 判题中、2 - 成功、3 - 失败）',
+    questionId bigint                             not null comment '题目 id',
+    userId     bigint                             not null comment '创建用户 id',
+    createTime datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    updateTime datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    isDelete   tinyint  default 0                 not null comment '是否删除',
+    index idx_questionId (questionId),
+    index idx_userId (userId)
 ) comment '题目提交';
 ```
 
@@ -320,11 +318,11 @@ private Long id;
 @AllArgsConstructor
 public class ExecuteCodeRequest {
 
-   private List<String> inputList;
+    private List<String> inputList;
 
-   private String code;
+    private String code;
 
-   private String language;
+    private String language;
 }
    ```
 
@@ -467,28 +465,30 @@ public class ExecuteCodeRequest {
 
    ```java
    /**
- * @author guiyi
- * @Date 2024/8/11 下午5:30:46
- * @ClassName com.guiyi.starseaoj.judge.codesandbox.CodeSandboxProxy
- * @function --> 代码沙箱代理类
- */
-   @Slf4j
-   @AllArgsConstructor
-   public class CodeSandboxProxy implements CodeSandbox {
 
-   private final CodeSandbox codeSandbox;
+* @author guiyi
+* @Date 2024/8/11 下午5:30:46
+* @ClassName com.guiyi.starseaoj.judge.codesandbox.CodeSandboxProxy
+* @function --> 代码沙箱代理类
+  */
+  @Slf4j
+  @AllArgsConstructor
+  public class CodeSandboxProxy implements CodeSandbox {
 
-   @Override
-   public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-      log.info("代码沙箱请求参数：{}", executeCodeRequest.toString());
-      ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
-      log.info("代码沙箱响应结果：{}", executeCodeResponse.toString());
-      return executeCodeResponse;
-   }
-   }
-   ```
+  private final CodeSandbox codeSandbox;
+
+  @Override
+  public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+  log.info("代码沙箱请求参数：{}", executeCodeRequest.toString());
+  ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+  log.info("代码沙箱响应结果：{}", executeCodeResponse.toString());
+  return executeCodeResponse;
+  }
+  }
+  ```
 
 使用方式：
+
 ```
 CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
 // 使用codeSandbox创建代理类对象重新赋值给codeSandbox
@@ -563,100 +563,100 @@ codeSandbox = new CodeSandboxProxy(codeSandbox);
 @Service // 和 @Component 没有实际区别，仅做语义区分，表示这是服务层
 public class JudgeServiceImpl implements JudgeService {
 
-   @Resource
-   private QuestionService questionService;
+    @Resource
+    private QuestionService questionService;
 
-   @Resource
-   private QuestionSubmitService questionSubmitService;
+    @Resource
+    private QuestionSubmitService questionSubmitService;
 
-   /**
-    * 从配置文件中获取type，设置默认值为thirdParty
-    */
-   @Value("${codesandbox.type:thirdParty}")
-   private String type;
+    /**
+     * 从配置文件中获取type，设置默认值为thirdParty
+     */
+    @Value("${codesandbox.type:thirdParty}")
+    private String type;
 
-   @Override
-   public QuestionSubmitVO doJudge(long questionSubmitId) {
-      // 1.传入题目的提交 id，获取到对应的题目、提交信息（包含代码、编程语言等）
-      QuestionSubmit questionSubmit = questionSubmitService.getById(questionSubmitId);
-      if (questionSubmit == null) {
-         throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "提交信息不存在");
-      }
-      Long questionId = questionSubmit.getQuestionId();
-      Question question = questionService.getById(questionId);
-      if (question == null) {
-         throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "题目不存在");
-      }
+    @Override
+    public QuestionSubmitVO doJudge(long questionSubmitId) {
+        // 1.传入题目的提交 id，获取到对应的题目、提交信息（包含代码、编程语言等）
+        QuestionSubmit questionSubmit = questionSubmitService.getById(questionSubmitId);
+        if (questionSubmit == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "提交信息不存在");
+        }
+        Long questionId = questionSubmit.getQuestionId();
+        Question question = questionService.getById(questionId);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "题目不存在");
+        }
 
-      // 2.如果题目提交状态不为 “待判题”，就不往下执行
-      if (!questionSubmit.getStatus().equals(QuestionSubmitStatusEnum.WAITING.getValue())) {
-         throw new BusinessException(ErrorCode.OPERATION_ERROR, "题目正在判题中");
-      }
+        // 2.如果题目提交状态不为 “待判题”，就不往下执行
+        if (!questionSubmit.getStatus().equals(QuestionSubmitStatusEnum.WAITING.getValue())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "题目正在判题中");
+        }
 
-      // 3.更改判题（题目提交）的状态为 “判题中”，防止重复执行，也能让用户即时看到状态
-      QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
-      questionSubmitUpdate.setId(questionId);
-      questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
-      boolean update = questionSubmitService.updateById(questionSubmitUpdate);
-      if (!update) {
-         throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新失败");
-      }
+        // 3.更改判题（题目提交）的状态为 “判题中”，防止重复执行，也能让用户即时看到状态
+        QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
+        questionSubmitUpdate.setId(questionId);
+        questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());
+        boolean update = questionSubmitService.updateById(questionSubmitUpdate);
+        if (!update) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目状态更新失败");
+        }
 
-      // 4.调用沙箱，获取到执行结果
-      CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
-      // 使用codeSandbox创建代理类对象重新赋值给codeSandbox
-      codeSandbox = new CodeSandboxProxy(codeSandbox);
-      String language = questionSubmit.getLanguage();
-      String code = questionSubmit.getCode();
+        // 4.调用沙箱，获取到执行结果
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+        // 使用codeSandbox创建代理类对象重新赋值给codeSandbox
+        codeSandbox = new CodeSandboxProxy(codeSandbox);
+        String language = questionSubmit.getLanguage();
+        String code = questionSubmit.getCode();
 
-      // 获取输入样例
-      String judgeCaseStr = question.getJudgeCase();
-      List<JudgeCase> judgeCaseList = JSONUtil.toList(judgeCaseStr, JudgeCase.class);
-      List<String> inputList = judgeCaseList.stream()
-              .map(JudgeCase::getInput)
-              .collect(Collectors.toList());
+        // 获取输入样例
+        String judgeCaseStr = question.getJudgeCase();
+        List<JudgeCase> judgeCaseList = JSONUtil.toList(judgeCaseStr, JudgeCase.class);
+        List<String> inputList = judgeCaseList.stream()
+                .map(JudgeCase::getInput)
+                .collect(Collectors.toList());
 
-      ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
-              .code(code)
-              .language(language)
-              .inputList(inputList)
-              .build();
-      ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
-      List<String> outputList = executeCodeResponse.getOutputList();
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .code(code)
+                .language(language)
+                .inputList(inputList)
+                .build();
+        ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        List<String> outputList = executeCodeResponse.getOutputList();
 
-      // 5.根据沙箱的执行结果，设置题目的判题状态和信息
-      JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.WAITING;
-      // 先判断沙箱执行的结果输出数量是否和预期输出数量相等
-      if (outputList.size() != inputList.size()) {
-         judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
-         return null;
-      }
-      // 依次判断每一项输出和预期输出是否相等
-      for (int i = 0; i < outputList.size(); i++) {
-         JudgeCase judgeCase = judgeCaseList.get(i);
-         if (judgeCase.getOutput().equals(outputList.get(i))) {
+        // 5.根据沙箱的执行结果，设置题目的判题状态和信息
+        JudgeInfoMessageEnum judgeInfoMessageEnum = JudgeInfoMessageEnum.WAITING;
+        // 先判断沙箱执行的结果输出数量是否和预期输出数量相等
+        if (outputList.size() != inputList.size()) {
             judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
             return null;
-         }
-      }
-      // 判题题目的限制是否符合要求
-      JudgeInfo judgeInfo = executeCodeResponse.getJudgeInfo();
-      Long memory = judgeInfo.getMemory();
-      Long time = judgeInfo.getTime();
-      String judgeConfigStr = question.getJudgeConfig();
-      JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
-      Long needTimeLimit = judgeConfig.getTimeLimit();
-      Long needMemoryLimit = judgeConfig.getMemoryLimit();
-      if (memory > needMemoryLimit) {
-         judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
-         return null;
-      }
-      if (time > needTimeLimit) {
-         judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
-         return null;
-      }
-      return null;
-   }
+        }
+        // 依次判断每一项输出和预期输出是否相等
+        for (int i = 0; i < outputList.size(); i++) {
+            JudgeCase judgeCase = judgeCaseList.get(i);
+            if (judgeCase.getOutput().equals(outputList.get(i))) {
+                judgeInfoMessageEnum = JudgeInfoMessageEnum.WRONG_ANSWER;
+                return null;
+            }
+        }
+        // 判题题目的限制是否符合要求
+        JudgeInfo judgeInfo = executeCodeResponse.getJudgeInfo();
+        Long memory = judgeInfo.getMemory();
+        Long time = judgeInfo.getTime();
+        String judgeConfigStr = question.getJudgeConfig();
+        JudgeConfig judgeConfig = JSONUtil.toBean(judgeConfigStr, JudgeConfig.class);
+        Long needTimeLimit = judgeConfig.getTimeLimit();
+        Long needMemoryLimit = judgeConfig.getMemoryLimit();
+        if (memory > needMemoryLimit) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.MEMORY_LIMIT_EXCEEDED;
+            return null;
+        }
+        if (time > needTimeLimit) {
+            judgeInfoMessageEnum = JudgeInfoMessageEnum.TIME_LIMIT_EXCEEDED;
+            return null;
+        }
+        return null;
+    }
 }
 ```
 
@@ -824,11 +824,11 @@ java -cp . SimpleCompute 1 6
 
 ```java
 public class Main {
-   public static void main(String[] args) {
-      int a = Integer.parseInt(args[0]);
-      int b = Integer.parseInt(args[1]);
-      System.out.println("结果:" + (a + b));
-   }
+    public static void main(String[] args) {
+        int a = Integer.parseInt(args[0]);
+        int b = Integer.parseInt(args[1]);
+        System.out.println("结果:" + (a + b));
+    }
 }
 ```
 
@@ -859,9 +859,9 @@ java -cp . Main 1 6
 ```xml
 
 <dependency>
-   <groupId>cn.hutool</groupId>
-   <artifactId>hutool-all</artifactId>
-   <version>5.8.26</version>
+    <groupId>cn.hutool</groupId>
+    <artifactId>hutool-all</artifactId>
+    <version>5.8.26</version>
 </dependency>
 ```
 
@@ -987,62 +987,62 @@ import java.io.InputStreamReader;
  * @function --> 终端执行命令工具类
  */
 public class ProcessUtils {
-   /**
-    * 运行命令并返回结果
-    *
-    * @param command 终端命令
-    * @param opName  操作名称
-    * @return
-    * @throws IOException
-    * @throws InterruptedException
-    */
-   public static ExecuteMessage runProcessAndGetMessage(String command, String opName)
-           throws IOException, InterruptedException {
-      // 执行结果
-      ExecuteMessage executeMessage = new ExecuteMessage();
+    /**
+     * 运行命令并返回结果
+     *
+     * @param command 终端命令
+     * @param opName  操作名称
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static ExecuteMessage runProcessAndGetMessage(String command, String opName)
+            throws IOException, InterruptedException {
+        // 执行结果
+        ExecuteMessage executeMessage = new ExecuteMessage();
 
-      // 执行命令
-      Process complileProcess = Runtime.getRuntime().exec(command);
+        // 执行命令
+        Process complileProcess = Runtime.getRuntime().exec(command);
 
-      // 等待编译完成，获取进程的退出值
-      int exitValue = complileProcess.waitFor();
-      executeMessage.setExistValue(exitValue);
+        // 等待编译完成，获取进程的退出值
+        int exitValue = complileProcess.waitFor();
+        executeMessage.setExistValue(exitValue);
 
-      if (exitValue == 0) {
-         System.out.println(opName + "成功");
+        if (exitValue == 0) {
+            System.out.println(opName + "成功");
 
-         // 获取程序输出
-         // 注意是Input而不是Output，因为Process类是这么定义的，不用纠结
-         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
-         StringBuilder complieOutputStringBuilder = new StringBuilder();
-         String line;
-         while ((line = bufferedReader.readLine()) != null) {
-            complieOutputStringBuilder.append(line);
-         }
-         executeMessage.setMessage(complieOutputStringBuilder.toString());
-      } else {
-         System.out.println(opName + "失败：" + exitValue);
+            // 获取程序输出
+            // 注意是Input而不是Output，因为Process类是这么定义的，不用纠结
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+            StringBuilder complieOutputStringBuilder = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                complieOutputStringBuilder.append(line);
+            }
+            executeMessage.setMessage(complieOutputStringBuilder.toString());
+        } else {
+            System.out.println(opName + "失败：" + exitValue);
 
-         // 获取输出流和错误流
-         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
-         StringBuilder complieOutputStringBuilder = new StringBuilder();
-         String line;
-         while ((line = bufferedReader.readLine()) != null) {
-            complieOutputStringBuilder.append(line);
-         }
-         executeMessage.setMessage(complieOutputStringBuilder.toString());
+            // 获取输出流和错误流
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+            StringBuilder complieOutputStringBuilder = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                complieOutputStringBuilder.append(line);
+            }
+            executeMessage.setMessage(complieOutputStringBuilder.toString());
 
-         BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
-         StringBuilder errorComplieOutputStringBuilder = new StringBuilder();
-         String errorLine;
-         while ((errorLine = errorBufferedReader.readLine()) != null) {
-            errorComplieOutputStringBuilder.append(errorLine);
-         }
-         executeMessage.setErrorMassage(errorComplieOutputStringBuilder.toString());
-      }
+            BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+            StringBuilder errorComplieOutputStringBuilder = new StringBuilder();
+            String errorLine;
+            while ((errorLine = errorBufferedReader.readLine()) != null) {
+                errorComplieOutputStringBuilder.append(errorLine);
+            }
+            executeMessage.setErrorMassage(errorComplieOutputStringBuilder.toString());
+        }
 
-      return executeMessage;
-   }
+        return executeMessage;
+    }
 }
 ```
 
@@ -1145,14 +1145,14 @@ println("删除"+(isDel ?"成功":"失败"));
  * @return
  */
 private ExecuteCodeResponse getErrorResponse(Exception e) {
-   ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
-   executeCodeResponse.setOutputList(new ArrayList<>());
-   executeCodeResponse.setMessage(e.getMessage());
-   // 表示代码沙箱错误
-   executeCodeResponse.setStatus(2);
-   executeCodeResponse.setJudgeInfo(new JudgeInfo());
+    ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
+    executeCodeResponse.setOutputList(new ArrayList<>());
+    executeCodeResponse.setMessage(e.getMessage());
+    // 表示代码沙箱错误
+    executeCodeResponse.setStatus(2);
+    executeCodeResponse.setJudgeInfo(new JudgeInfo());
 
-   return executeCodeResponse;
+    return executeCodeResponse;
 }
 ```
 
@@ -1174,11 +1174,11 @@ private ExecuteCodeResponse getErrorResponse(Exception e) {
  * @function --> 无限睡眠（阻塞程序运行）
  */
 public class Main {
-   public static void main(String[] args) throws InterruptedException {
-      long ONE_HOUR = 60 * 60 * 1000L;
-      Thread.sleep(ONE_HOUR);
-      System.out.println("睡完了");
-   }
+    public static void main(String[] args) throws InterruptedException {
+        long ONE_HOUR = 60 * 60 * 1000L;
+        Thread.sleep(ONE_HOUR);
+        System.out.println("睡完了");
+    }
 }
 ```
 
@@ -1192,12 +1192,12 @@ public class Main {
  * @function --> 无限占用空间（浪费系统内存）
  */
 public class Main {
-   public static void main(String[] args) throws InterruptedException {
-      List<byte[]> bytes = new ArrayList<>();
-      while (true) {
-         bytes.add(new byte[10000]);
-      }
-   }
+    public static void main(String[] args) throws InterruptedException {
+        List<byte[]> bytes = new ArrayList<>();
+        while (true) {
+            bytes.add(new byte[10000]);
+        }
+    }
 }
 ```
 
@@ -1214,12 +1214,12 @@ public class Main {
 
 ```java
 public class Main {
-   public static void main(String[] args) throws InterruptedException, IOException {
-      String userDir = System.getProperty("user.dir");
-      String filePath = userDir + File.separator + "src/main/resources/application.yml";
-      List<String> allLines = Files.readAllLines(Paths.get(filePath));
-      System.out.println(String.join("\n", allLines));
-   }
+    public static void main(String[] args) throws InterruptedException, IOException {
+        String userDir = System.getProperty("user.dir");
+        String filePath = userDir + File.separator + "src/main/resources/application.yml";
+        List<String> allLines = Files.readAllLines(Paths.get(filePath));
+        System.out.println(String.join("\n", allLines));
+    }
 }
 ```
 
@@ -1233,17 +1233,17 @@ public class Main {
  * @function --> 写文件，植入木马
  */
 public class Main {
-   public static void main(String[] args) throws IOException {
-      String userDir = System.getProperty("user.dir");
-      String filePath = userDir + File.separator + "src/main/resources/木马程序.bat";
+    public static void main(String[] args) throws IOException {
+        String userDir = System.getProperty("user.dir");
+        String filePath = userDir + File.separator + "src/main/resources/木马程序.bat";
 
-      // 创建bat文件，将恶意代码如删除文件等写入
-      String errorProgram = "this is bad code";
-      Files.write(Paths.get(filePath), Arrays.asList(errorProgram));
+        // 创建bat文件，将恶意代码如删除文件等写入
+        String errorProgram = "this is bad code";
+        Files.write(Paths.get(filePath), Arrays.asList(errorProgram));
 
-      // 使用终端命令运行bat文件...
-      System.out.println("运行bat文件");
-   }
+        // 使用终端命令运行bat文件...
+        System.out.println("运行bat文件");
+    }
 }
 ```
 
@@ -1399,8 +1399,8 @@ private static final List<String> BLOCK_LIST = Arrays.asList("Files", "exec", "b
 private static final WordTree WORD_TREE = new WordTree();
 
 static {
-   // 加入字典树
-   WORD_TREE.addWords(BLOCK_LIST);
+    // 加入字典树
+    WORD_TREE.addWords(BLOCK_LIST);
 }
 ```
 
@@ -1435,10 +1435,10 @@ import java.security.Permission;
  */
 public class DefaultSecurityManager extends SecurityManager {
 
-   @Override
-   public void checkPermission(Permission perm) {
-      System.out.println("所有权限放开");
-   }
+    @Override
+    public void checkPermission(Permission perm) {
+        System.out.println("所有权限放开");
+    }
 }
 
 ```
@@ -1458,12 +1458,12 @@ import java.security.Permission;
  */
 public class DefaultSecurityManager extends SecurityManager {
 
-   @Override
-   public void checkPermission(Permission perm) {
-      // System.out.println("所有权限放开");
-      // super.checkPermission(perm);
-      throw new SecurityException("权限异常：" + perm.toString());
-   }
+    @Override
+    public void checkPermission(Permission perm) {
+        // System.out.println("所有权限放开");
+        // super.checkPermission(perm);
+        throw new SecurityException("权限异常：" + perm.toString());
+    }
 }
 
 ```
@@ -1482,41 +1482,41 @@ import java.security.Permission;
  * @function -->
  */
 public class MySecurityManager extends SecurityManager {
-   // 所有权限
-   @Override
-   public void checkPermission(Permission perm) {
-      System.out.println("所有权限放开");
-   }
+    // 所有权限
+    @Override
+    public void checkPermission(Permission perm) {
+        System.out.println("所有权限放开");
+    }
 
-   // cmd命令
-   @Override
-   public void checkExec(String cmd) {
-      throw new SecurityException("cmd命令执行被禁止：" + cmd);
-   }
+    // cmd命令
+    @Override
+    public void checkExec(String cmd) {
+        throw new SecurityException("cmd命令执行被禁止：" + cmd);
+    }
 
-   // 连接权限
-   @Override
-   public void checkConnect(String host, int port) {
-      throw new SecurityException("连接被禁止：" + host + ":" + port);
-   }
+    // 连接权限
+    @Override
+    public void checkConnect(String host, int port) {
+        throw new SecurityException("连接被禁止：" + host + ":" + port);
+    }
 
-   // 读文件权限
-   @Override
-   public void checkRead(String file, Object context) {
-      throw new SecurityException("读文件被禁止：" + file);
-   }
+    // 读文件权限
+    @Override
+    public void checkRead(String file, Object context) {
+        throw new SecurityException("读文件被禁止：" + file);
+    }
 
-   // 写文件权限
-   @Override
-   public void checkWrite(String file) {
-      throw new SecurityException("写文件被禁止：" + file);
-   }
+    // 写文件权限
+    @Override
+    public void checkWrite(String file) {
+        throw new SecurityException("写文件被禁止：" + file);
+    }
 
-   // 删除文件权限
-   @Override
-   public void checkDelete(String file) {
-      throw new SecurityException("删除文件被禁止：" + file);
-   }
+    // 删除文件权限
+    @Override
+    public void checkDelete(String file) {
+        throw new SecurityException("删除文件被禁止：" + file);
+    }
 }
 ```
 
@@ -1610,9 +1610,9 @@ Dockerfile：制作镜像的文件，可以理解为制作镜像的一个清单
 ```xml
 
 <dependency>
-   <groupId>com.github.docker-java</groupId>
-   <artifactId>docker-java</artifactId>
-   <version>3.3.0</version>
+    <groupId>com.github.docker-java</groupId>
+    <artifactId>docker-java</artifactId>
+    <version>3.3.0</version>
 </dependency>
 <dependency>
 <groupId>com.github.docker-java</groupId>
@@ -1662,26 +1662,26 @@ import java.util.List;
  * @function -->
  */
 public class DockerDemo {
-   public static void main(String[] args) {
-      DockerClient dockerClient = null;
-      try {
-         // 创建 Docker 客户端
-         dockerClient = DockerClientBuilder.getInstance("tcp://8.134.202.187:2375").build();
+    public static void main(String[] args) {
+        DockerClient dockerClient = null;
+        try {
+            // 创建 Docker 客户端
+            dockerClient = DockerClientBuilder.getInstance("tcp://8.134.202.187:2375").build();
 
-         // 列出所有容器，包括已停止的容器
-         List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
-         if (containers.isEmpty()) {
-            System.out.println("没有容器正在运行。");
-         } else {
-            for (Container container : containers) {
-               System.out.println("Container ID: " + container.getId() + ", Names: " + String.join(", ", container.getNames()));
+            // 列出所有容器，包括已停止的容器
+            List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+            if (containers.isEmpty()) {
+                System.out.println("没有容器正在运行。");
+            } else {
+                for (Container container : containers) {
+                    System.out.println("Container ID: " + container.getId() + ", Names: " + String.join(", ", container.getNames()));
+                }
             }
-         }
-      } catch (Exception e) {
-         e.printStackTrace();
-         System.out.println("无法连接到 Docker 守护进程，请检查连接设置和权限。");
-      }
-   }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("无法连接到 Docker 守护进程，请检查连接设置和权限。");
+        }
+    }
 }
 ```
 
@@ -1695,11 +1695,11 @@ public class DockerDemo {
 String image = "nginx:latest";
 PullImageCmd pullImageCmd = dockerClient.pullImageCmd(image);
 PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
-   @Override
-   public void onNext(PullResponseItem item) {
-      System.out.println("下载镜像：" + item.getStatus());
-      super.onNext(item);
-   }
+    @Override
+    public void onNext(PullResponseItem item) {
+        System.out.println("下载镜像：" + item.getStatus());
+        super.onNext(item);
+    }
 };
 pullImageCmd
         .
@@ -1751,12 +1751,12 @@ exec();
 ```java
 // 查看日志
 LogContainerResultCallback logContainerResultCallback = new LogContainerResultCallback() {
-   @Override
-   public void onNext(Frame item) {
-      System.out.println(item.getStreamType());
-      System.out.println("日志：" + new String(item.getPayload()));
-      super.onNext(item);
-   }
+    @Override
+    public void onNext(Frame item) {
+        System.out.println(item.getStreamType());
+        System.out.println("日志：" + new String(item.getPayload()));
+        super.onNext(item);
+    }
 };
 
 // 阻塞等待日志输出
@@ -1879,18 +1879,18 @@ println("创建执行命令："+execCreateCmdResponse);
 ```java
 String execId = execCreateCmdResponse.getId();
 ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() {
-   @Override
-   public void onNext(Frame frame) {
-      StreamType streamType = frame.getStreamType();
-      if (StreamType.STDERR.equals(streamType)) {
-         errorMessage[0] = new String(frame.getPayload());
-         System.out.println("输出错误结果：" + errorMessage[0]);
-      } else {
-         message[0] = new String(frame.getPayload());
-         System.out.println("输出结果：" + message[0]);
-      }
-      super.onNext(frame);
-   }
+    @Override
+    public void onNext(Frame frame) {
+        StreamType streamType = frame.getStreamType();
+        if (StreamType.STDERR.equals(streamType)) {
+            errorMessage[0] = new String(frame.getPayload());
+            System.out.println("输出错误结果：" + errorMessage[0]);
+        } else {
+            message[0] = new String(frame.getPayload());
+            System.out.println("输出结果：" + message[0]);
+        }
+        super.onNext(frame);
+    }
 };
 try{
         dockerClient.
@@ -1966,27 +1966,27 @@ final long[] maxMemory = {0L};
 // 获取占用的内存
 StatsCmd statsCmd = dockerClient.statsCmd(containerId);
 ResultCallback<Statistics> statisticsResultCallback = statsCmd.exec(new ResultCallback<Statistics>() {
-   @Override
-   public void onNext(Statistics statistics) {
-      System.out.println("内存占用：" + statistics.getMemoryStats().getUsage());
-      maxMemory[0] = Math.max(statistics.getMemoryStats().getUsage(), maxMemory[0]);
-   }
+    @Override
+    public void onNext(Statistics statistics) {
+        System.out.println("内存占用：" + statistics.getMemoryStats().getUsage());
+        maxMemory[0] = Math.max(statistics.getMemoryStats().getUsage(), maxMemory[0]);
+    }
 
-   @Override
-   public void close() throws IOException {
-   }
+    @Override
+    public void close() throws IOException {
+    }
 
-   @Override
-   public void onStart(Closeable closeable) {
-   }
+    @Override
+    public void onStart(Closeable closeable) {
+    }
 
-   @Override
-   public void onError(Throwable throwable) {
-   }
+    @Override
+    public void onError(Throwable throwable) {
+    }
 
-   @Override
-   public void onComplete() {
-   }
+    @Override
+    public void onComplete() {
+    }
 });
 statsCmd.
 
@@ -2022,25 +2022,25 @@ awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);  // 设置超时时间
 ```java
 final boolean[] timeout = {true}; // 超时标志
 ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() {
-   @Override
-   public void onComplete() {
-      // 如果执行完成，设置为false表示未超时
-      timeout[0] = false;
-      super.onComplete();
-   }
+    @Override
+    public void onComplete() {
+        // 如果执行完成，设置为false表示未超时
+        timeout[0] = false;
+        super.onComplete();
+    }
 
-   @Override
-   public void onNext(Frame frame) {
-      StreamType streamType = frame.getStreamType();
-      if (StreamType.STDERR.equals(streamType)) {
-         errorMessage[0] = new String(frame.getPayload());
-         System.out.println("输出错误结果：" + errorMessage[0]);
-      } else {
-         message[0] = new String(frame.getPayload());
-         System.out.println("输出结果：" + message[0]);
-      }
-      super.onNext(frame);
-   }
+    @Override
+    public void onNext(Frame frame) {
+        StreamType streamType = frame.getStreamType();
+        if (StreamType.STDERR.equals(streamType)) {
+            errorMessage[0] = new String(frame.getPayload());
+            System.out.println("输出错误结果：" + errorMessage[0]);
+        } else {
+            message[0] = new String(frame.getPayload());
+            System.out.println("输出结果：" + message[0]);
+        }
+        super.onNext(frame);
+    }
 };
 ```
 
@@ -2158,29 +2158,29 @@ Docker 容器已经做了系统层面的隔离，比较安全，但不能保证�
 
 ```java
 public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-   List<String> inputList = executeCodeRequest.getInputList();
-   String code = executeCodeRequest.getCode();
+    List<String> inputList = executeCodeRequest.getInputList();
+    String code = executeCodeRequest.getCode();
 
-   // 1.隔离存放用户代码
-   File userCodeFile = saveCodeToFile(code);
+    // 1.隔离存放用户代码
+    File userCodeFile = saveCodeToFile(code);
 
-   // 2.编译命令
-   ExecuteMessage complieExecuteMessage = compileFile(userCodeFile);
-   System.out.println(complieExecuteMessage);
+    // 2.编译命令
+    ExecuteMessage complieExecuteMessage = compileFile(userCodeFile);
+    System.out.println(complieExecuteMessage);
 
-   // 3.运行程序
-   List<ExecuteMessage> executeMessageList = runFile(userCodeFile, inputList);
+    // 3.运行程序
+    List<ExecuteMessage> executeMessageList = runFile(userCodeFile, inputList);
 
-   // 4.整理输出结果
-   ExecuteCodeResponse executeCodeResponse = getOutputResponse(executeMessageList);
+    // 4.整理输出结果
+    ExecuteCodeResponse executeCodeResponse = getOutputResponse(executeMessageList);
 
-   // 5.文件清理
-   boolean isDel = deleteFile(userCodeFile);
-   if (!isDel) {
-      log.error("删除文件路径{}失败", userCodeFile.getAbsolutePath());
-   }
+    // 5.文件清理
+    boolean isDel = deleteFile(userCodeFile);
+    if (!isDel) {
+        log.error("删除文件路径{}失败", userCodeFile.getAbsolutePath());
+    }
 
-   return executeCodeResponse;
+    return executeCodeResponse;
 }
 ```
 
@@ -2196,10 +2196,10 @@ Java 原生代码沙箱实现，直接复用模板方法定义好的方法实现
  * @function --> java代码沙箱模板实现
  */
 public class JavaNativeCodeSandboxNew extends JavaCodeSandboxTemplate {
-   @Override
-   public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-      return super.executeCode(executeCodeRequest);
-   }
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        return super.executeCode(executeCodeRequest);
+    }
 }
 ```
 
@@ -2215,155 +2215,155 @@ Docker 代码沙箱实现，只需要重写 RunFile 方法：
  */
 @Override
 public List<ExecuteMessage> runFile(File userCodeFile, List<String> inputList) {
-   // 3.创建容器，复制文件到其中
-   // 创建 Docker 客户端
-   DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+    // 3.创建容器，复制文件到其中
+    // 创建 Docker 客户端
+    DockerClient dockerClient = DockerClientBuilder.getInstance().build();
 
-   // 判断镜像是否存在
-   if (!checkImageExists(dockerClient, IMAGE_NAME)) {
-      PullImageCmd pullImageCmd = dockerClient.pullImageCmd(IMAGE_NAME);
-      PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
-         @Override
-         public void onNext(PullResponseItem item) {
-            System.out.println("下载镜像：" + item.getStatus());
-            super.onNext(item);
-         }
-      };
-      try {
-         pullImageCmd
-                 .exec(pullImageResultCallback)
-                 .awaitCompletion();
-      } catch (InterruptedException e) {
-         System.out.println("拉取镜像异常");
-         throw new RuntimeException(e);
-      }
-      System.out.println("下载镜像openjdk:8-alpine完成");
-   }
-
-   // 判断容器是否存在
-   // 注意容器不可复用，因为每次的挂载目录都不同，且docker 不支持直接修改已经创建的容器的挂载目录。
-   // 因此只能删除后重新创建容器并挂载目录。
-   if (checkContainerExists(dockerClient, CONTAINER_NAME)) {
-      // 先停止并删除旧容器
-      dockerClient.removeContainerCmd(CONTAINER_NAME).withForce(true).exec();
-   }
-   // 创建容器
-   CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
-   HostConfig hostConfig = new HostConfig();
-   hostConfig.withMemory(100 * 1000 * 1000L);
-   hostConfig.withMemorySwap(0L);
-   hostConfig.withCpuCount(1L);
-   String userCodeParentPath = userCodeFile.getParentFile().getAbsolutePath();
-   hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
-   // 配置seccomp
-   String profileConfig = ResourceUtil.readUtf8Str("seccomp/profile.json");
-   hostConfig.withSecurityOpts(Arrays.asList("seccomp=" + profileConfig));
-
-   CreateContainerResponse createContainerResponse = containerCmd
-           .withName(CONTAINER_NAME)    // 设置容器名称
-           .withHostConfig(hostConfig)
-           .withNetworkDisabled(true)  // 禁用网络
-           .withReadonlyRootfs(true)   // 禁止向root根目录写文件
-           .withAttachStdin(true)  // 与本地终端连接
-           .withAttachStderr(true)
-           .withAttachStdout(true)
-           .withTty(true)  // 创建交互终端
-           .exec();
-   // 启动容器
-   dockerClient.startContainerCmd(CONTAINER_NAME).exec();
-
-   // 4.在容器中执行代码，得到输出结果
-   // docker exec java8_container java -cp /app Main 1 3
-   // 执行命令并获取结果
-   List<ExecuteMessage> executeMessageList = new ArrayList<>();
-   for (String inputArgs : inputList) {
-      String[] inputArgsArray = inputArgs.split(" ");
-      String[] cmdArray = ArrayUtil.append(new String[]{"java", "-cp", "/app", "Main"}, inputArgsArray);
-      ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(CONTAINER_NAME)
-              .withCmd(cmdArray)
-              .withAttachStderr(true)
-              .withAttachStdin(true)
-              .withAttachStdout(true)
-              .exec();
-      System.out.println("创建执行命令：" + execCreateCmdResponse);
-
-      final String[] message = {null};
-      final String[] errorMessage = {null};
-      final boolean[] timeout = {true}; // 超时标志
-      ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() {
-         @Override
-         public void onComplete() {
-            // 如果执行完成，设置为false表示未超时
-            timeout[0] = false;
-            super.onComplete();
-         }
-
-         @Override
-         public void onNext(Frame frame) {
-            StreamType streamType = frame.getStreamType();
-            if (StreamType.STDERR.equals(streamType)) {
-               errorMessage[0] = new String(frame.getPayload());
-               System.out.println("输出错误结果：" + errorMessage[0]);
-            } else {
-               message[0] = new String(frame.getPayload());
-               System.out.println("输出结果：" + message[0]);
+    // 判断镜像是否存在
+    if (!checkImageExists(dockerClient, IMAGE_NAME)) {
+        PullImageCmd pullImageCmd = dockerClient.pullImageCmd(IMAGE_NAME);
+        PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
+            @Override
+            public void onNext(PullResponseItem item) {
+                System.out.println("下载镜像：" + item.getStatus());
+                super.onNext(item);
             }
-            super.onNext(frame);
-         }
-      };
+        };
+        try {
+            pullImageCmd
+                    .exec(pullImageResultCallback)
+                    .awaitCompletion();
+        } catch (InterruptedException e) {
+            System.out.println("拉取镜像异常");
+            throw new RuntimeException(e);
+        }
+        System.out.println("下载镜像openjdk:8-alpine完成");
+    }
 
-      final long[] maxMemory = {0L};
-      // 获取占用的内存
-      StatsCmd statsCmd = dockerClient.statsCmd(CONTAINER_NAME);
-      ResultCallback<Statistics> statisticsResultCallback = statsCmd.exec(new ResultCallback<Statistics>() {
-         @Override
-         public void onNext(Statistics statistics) {
-            System.out.println("内存占用：" + statistics.getMemoryStats().getUsage());
-            maxMemory[0] = Math.max(statistics.getMemoryStats().getUsage(), maxMemory[0]);
-         }
+    // 判断容器是否存在
+    // 注意容器不可复用，因为每次的挂载目录都不同，且docker 不支持直接修改已经创建的容器的挂载目录。
+    // 因此只能删除后重新创建容器并挂载目录。
+    if (checkContainerExists(dockerClient, CONTAINER_NAME)) {
+        // 先停止并删除旧容器
+        dockerClient.removeContainerCmd(CONTAINER_NAME).withForce(true).exec();
+    }
+    // 创建容器
+    CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
+    HostConfig hostConfig = new HostConfig();
+    hostConfig.withMemory(100 * 1000 * 1000L);
+    hostConfig.withMemorySwap(0L);
+    hostConfig.withCpuCount(1L);
+    String userCodeParentPath = userCodeFile.getParentFile().getAbsolutePath();
+    hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
+    // 配置seccomp
+    String profileConfig = ResourceUtil.readUtf8Str("seccomp/profile.json");
+    hostConfig.withSecurityOpts(Arrays.asList("seccomp=" + profileConfig));
 
-         @Override
-         public void close() throws IOException {
-         }
+    CreateContainerResponse createContainerResponse = containerCmd
+            .withName(CONTAINER_NAME)    // 设置容器名称
+            .withHostConfig(hostConfig)
+            .withNetworkDisabled(true)  // 禁用网络
+            .withReadonlyRootfs(true)   // 禁止向root根目录写文件
+            .withAttachStdin(true)  // 与本地终端连接
+            .withAttachStderr(true)
+            .withAttachStdout(true)
+            .withTty(true)  // 创建交互终端
+            .exec();
+    // 启动容器
+    dockerClient.startContainerCmd(CONTAINER_NAME).exec();
 
-         @Override
-         public void onStart(Closeable closeable) {
-         }
+    // 4.在容器中执行代码，得到输出结果
+    // docker exec java8_container java -cp /app Main 1 3
+    // 执行命令并获取结果
+    List<ExecuteMessage> executeMessageList = new ArrayList<>();
+    for (String inputArgs : inputList) {
+        String[] inputArgsArray = inputArgs.split(" ");
+        String[] cmdArray = ArrayUtil.append(new String[]{"java", "-cp", "/app", "Main"}, inputArgsArray);
+        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(CONTAINER_NAME)
+                .withCmd(cmdArray)
+                .withAttachStderr(true)
+                .withAttachStdin(true)
+                .withAttachStdout(true)
+                .exec();
+        System.out.println("创建执行命令：" + execCreateCmdResponse);
 
-         @Override
-         public void onError(Throwable throwable) {
-         }
+        final String[] message = {null};
+        final String[] errorMessage = {null};
+        final boolean[] timeout = {true}; // 超时标志
+        ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() {
+            @Override
+            public void onComplete() {
+                // 如果执行完成，设置为false表示未超时
+                timeout[0] = false;
+                super.onComplete();
+            }
 
-         @Override
-         public void onComplete() {
-         }
-      });
-      statsCmd.exec(statisticsResultCallback);
+            @Override
+            public void onNext(Frame frame) {
+                StreamType streamType = frame.getStreamType();
+                if (StreamType.STDERR.equals(streamType)) {
+                    errorMessage[0] = new String(frame.getPayload());
+                    System.out.println("输出错误结果：" + errorMessage[0]);
+                } else {
+                    message[0] = new String(frame.getPayload());
+                    System.out.println("输出结果：" + message[0]);
+                }
+                super.onNext(frame);
+            }
+        };
 
-      String execId = execCreateCmdResponse.getId();  // 获取容器id
-      StopWatch stopWatch = new StopWatch();  // 计时
-      long time = 0L;
-      try {
-         stopWatch.start();
-         dockerClient.execStartCmd(execId)
-                 .exec(execStartResultCallback)
-                 .awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);  // 设置超时时间
-         stopWatch.stop();
-         time = stopWatch.getLastTaskTimeMillis();
+        final long[] maxMemory = {0L};
+        // 获取占用的内存
+        StatsCmd statsCmd = dockerClient.statsCmd(CONTAINER_NAME);
+        ResultCallback<Statistics> statisticsResultCallback = statsCmd.exec(new ResultCallback<Statistics>() {
+            @Override
+            public void onNext(Statistics statistics) {
+                System.out.println("内存占用：" + statistics.getMemoryStats().getUsage());
+                maxMemory[0] = Math.max(statistics.getMemoryStats().getUsage(), maxMemory[0]);
+            }
 
-         statsCmd.close();   // 执行完后关闭统计命令
-      } catch (InterruptedException e) {
-         System.out.println("程序执行异常");
-         throw new RuntimeException(e);
-      }
-      ExecuteMessage executeMessage = new ExecuteMessage();
-      executeMessage.setMessage(message[0]);
-      executeMessage.setErrorMessage(errorMessage[0]);
-      executeMessage.setTime(time);
-      executeMessage.setMemory(maxMemory[0]);
-      executeMessageList.add(executeMessage);
-   }
-   return executeMessageList;
+            @Override
+            public void close() throws IOException {
+            }
+
+            @Override
+            public void onStart(Closeable closeable) {
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
+        statsCmd.exec(statisticsResultCallback);
+
+        String execId = execCreateCmdResponse.getId();  // 获取容器id
+        StopWatch stopWatch = new StopWatch();  // 计时
+        long time = 0L;
+        try {
+            stopWatch.start();
+            dockerClient.execStartCmd(execId)
+                    .exec(execStartResultCallback)
+                    .awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);  // 设置超时时间
+            stopWatch.stop();
+            time = stopWatch.getLastTaskTimeMillis();
+
+            statsCmd.close();   // 执行完后关闭统计命令
+        } catch (InterruptedException e) {
+            System.out.println("程序执行异常");
+            throw new RuntimeException(e);
+        }
+        ExecuteMessage executeMessage = new ExecuteMessage();
+        executeMessage.setMessage(message[0]);
+        executeMessage.setErrorMessage(errorMessage[0]);
+        executeMessage.setTime(time);
+        executeMessage.setMemory(maxMemory[0]);
+        executeMessageList.add(executeMessage);
+    }
+    return executeMessageList;
 }
 ```
 
@@ -2392,10 +2392,10 @@ private JavaNativeCodeSandboxNew javaNativeCodeSandboxNew;
  */
 @PostMapping("/executeCode")
 public ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest) {
-   if (executeCodeRequest == null) {
-      throw new RuntimeException("请求参数为空");
-   }
-   return javaNativeCodeSandboxNew.executeCode(executeCodeRequest);
+    if (executeCodeRequest == null) {
+        throw new RuntimeException("请求参数为空");
+    }
+    return javaNativeCodeSandboxNew.executeCode(executeCodeRequest);
 }
 ```
 
@@ -2409,21 +2409,21 @@ public ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCo
  * @function --> 远程代码沙箱（实际调用接口的沙箱）
  */
 public class RemoteCodeSandbox implements CodeSandbox {
-   @Override
-   public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-      System.out.println("远程代码沙箱");
-      String url = "http://localhost:8090/executeCode";
-      String json = JSONUtil.toJsonStr(executeCodeRequest);
-      String responseStr = HttpUtil.createPost(url)
-              .body(json)
-              .execute()
-              .body();
-      if (StringUtils.isBlank(responseStr)) {
-         throw new BusinessException(ErrorCode.API_REQUEST_ERROR,
-                 "调用远程代码沙箱出错，responseStr = " + responseStr);
-      }
-      return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
-   }
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        System.out.println("远程代码沙箱");
+        String url = "http://localhost:8090/executeCode";
+        String json = JSONUtil.toJsonStr(executeCodeRequest);
+        String responseStr = HttpUtil.createPost(url)
+                .body(json)
+                .execute()
+                .body();
+        if (StringUtils.isBlank(responseStr)) {
+            throw new BusinessException(ErrorCode.API_REQUEST_ERROR,
+                    "调用远程代码沙箱出错，responseStr = " + responseStr);
+        }
+        return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
+    }
 }
 ```
 
@@ -2432,7 +2432,7 @@ public class RemoteCodeSandbox implements CodeSandbox {
 ```yaml
 # 代码沙箱配置
 codesandbox:
-   type: remote
+  type: remote
 ```
 
 #### API调用鉴权
@@ -2456,34 +2456,34 @@ codesandbox:
  */
 @RestController
 public class MainController {
-   // 定义鉴权请求头和密钥
-   private static final String AUTH_REQUEST_HEADER = "auth";
+    // 定义鉴权请求头和密钥
+    private static final String AUTH_REQUEST_HEADER = "auth";
 
-   private static final String AUTH_REQUEST_SECRET = "secretKey";
+    private static final String AUTH_REQUEST_SECRET = "secretKey";
 
-   @Resource
-   private JavaNativeCodeSandboxNew javaNativeCodeSandboxNew;
+    @Resource
+    private JavaNativeCodeSandboxNew javaNativeCodeSandboxNew;
 
-   /**
-    * 调用代码沙箱执行代码
-    *
-    * @param executeCodeRequest
-    * @return
-    */
-   @PostMapping("/executeCode")
-   public ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest,
-                                          HttpServletRequest request, HttpServletResponse response) {
-      String authHeader = request.getHeader(AUTH_REQUEST_HEADER);
-      if (!AUTH_REQUEST_SECRET.equals(authHeader)) {
-         response.setStatus(403);
-         return null;
-      }
+    /**
+     * 调用代码沙箱执行代码
+     *
+     * @param executeCodeRequest
+     * @return
+     */
+    @PostMapping("/executeCode")
+    public ExecuteCodeResponse executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest,
+                                           HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader(AUTH_REQUEST_HEADER);
+        if (!AUTH_REQUEST_SECRET.equals(authHeader)) {
+            response.setStatus(403);
+            return null;
+        }
 
-      if (executeCodeRequest == null) {
-         throw new RuntimeException("请求参数为空");
-      }
-      return javaNativeCodeSandboxNew.executeCode(executeCodeRequest);
-   }
+        if (executeCodeRequest == null) {
+            throw new RuntimeException("请求参数为空");
+        }
+        return javaNativeCodeSandboxNew.executeCode(executeCodeRequest);
+    }
 }
 ```
 
@@ -2497,27 +2497,27 @@ public class MainController {
  * @function --> 远程代码沙箱（实际调用接口的沙箱）
  */
 public class RemoteCodeSandbox implements CodeSandbox {
-   // 定义鉴权请求头和密钥
-   private static final String AUTH_REQUEST_HEADER = "auth";
+    // 定义鉴权请求头和密钥
+    private static final String AUTH_REQUEST_HEADER = "auth";
 
-   private static final String AUTH_REQUEST_SECRET = "secretKey";
+    private static final String AUTH_REQUEST_SECRET = "secretKey";
 
-   @Override
-   public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-      System.out.println("远程代码沙箱");
-      String url = "http://localhost:8090/executeCode";
-      String json = JSONUtil.toJsonStr(executeCodeRequest);
-      String responseStr = HttpUtil.createPost(url)
-              .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)
-              .body(json)
-              .execute()
-              .body();
-      if (StringUtils.isBlank(responseStr)) {
-         throw new BusinessException(ErrorCode.API_REQUEST_ERROR,
-                 "调用远程代码沙箱出错，responseStr = " + responseStr);
-      }
-      return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
-   }
+    @Override
+    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+        System.out.println("远程代码沙箱");
+        String url = "http://localhost:8090/executeCode";
+        String json = JSONUtil.toJsonStr(executeCodeRequest);
+        String responseStr = HttpUtil.createPost(url)
+                .header(AUTH_REQUEST_HEADER, AUTH_REQUEST_SECRET)
+                .body(json)
+                .execute()
+                .body();
+        if (StringUtils.isBlank(responseStr)) {
+            throw new BusinessException(ErrorCode.API_REQUEST_ERROR,
+                    "调用远程代码沙箱出错，responseStr = " + responseStr);
+        }
+        return JSONUtil.toBean(responseStr, ExecuteCodeResponse.class);
+    }
 }
 ```
 
@@ -2595,11 +2595,11 @@ docker run --name redis -p 6379:6379 -v /root/redis/redis.conf:/usr/local/etc/re
 ```yaml
 # Redis 配置
 redis:
-   database: 1
-   host: 8.134.202.187
-   port: 6379
-   timeout: 5000
-   password: guiyi886
+  database: 1
+  host: 8.134.202.187
+  port: 6379
+  timeout: 5000
+  password: guiyi886
 ```
 
 #### 2.添加依赖：
@@ -2607,8 +2607,8 @@ redis:
 ```xml
 <!-- redis -->
 <dependency>
-   <groupId>org.springframework.boot</groupId>
-   <artifactId>spring-boot-starter-data-redis</artifactId>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
 </dependency>
 <dependency>
 <groupId>org.springframework.session</groupId>
@@ -2630,8 +2630,8 @@ redis:
 
 ```yaml
 spring:
-   session:
-      store-type: redis
+  session:
+    store-type: redis
 ```
 
 #### 5.进入容器后，使用 redis-cli 或者 redis 管理工具，查看是否有登录后的信息。
@@ -2646,7 +2646,7 @@ redis-cli
 依赖服务：
 
 - 注册中心：Nacos
-- 微服务网关（starseaoj_backend_gateway）：Gateway 聚合所有的接口，统一接受处理前端的请求
+- 微服务网关（starseaoj-backend-gateway）：Gateway 聚合所有的接口，统一接受处理前端的请求
 
 公共模块：
 
@@ -2657,21 +2657,21 @@ redis-cli
 业务功能：
 
 1. 用户服务（starseaoj_backend_user_service：8102 端口）：
-   1. 注册（后端已实现）
-   2. 登录（后端已实现，前端已实现）
-   3. 用户管理
+    1. 注册（后端已实现）
+    2. 登录（后端已实现，前端已实现）
+    3. 用户管理
 2. 题目服务（yuoj_backend_question_service：8103）
-   1. 创建题目（管理员）
-   2. 删除题目（管理员）
-   3. 修改题目（管理员）
-   4. 搜索题目（用户）
-   5. 在线做题（题目详情页）
-   6. **题目提交**
+    1. 创建题目（管理员）
+    2. 删除题目（管理员）
+    3. 修改题目（管理员）
+    4. 搜索题目（用户）
+    5. 在线做题（题目详情页）
+    6. **题目提交**
 3. 判题服务（yuoj_backend_judge_service，8104 端口，较重的操作）
-   1. 执行判题逻辑
-   2. 错误处理（内存溢出、安全性、超时）
-   3. **自主实现** 代码沙箱（安全沙箱）
-   4. 开放接口（提供一个独立的新服务）
+    1. 执行判题逻辑
+    2. 错误处理（内存溢出、安全性、超时）
+    3. **自主实现** 代码沙箱（安全沙箱）
+    4. 开放接口（提供一个独立的新服务）
 
 > 代码沙箱服务本身就是独立的，不用纳入 Spring Cloud 的管理
 
@@ -2714,13 +2714,13 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 ```xml
 
 <modules>
-   <module>starseaoj_backend_common</module>
-   <module>starseaoj_backend_gateway</module>
-   <module>starseaoj_backend_judge_service</module>
-   <module>starseaoj_backend_model</module>
-   <module>starseaoj_backend_question_service</module>
-   <module>starseaoj_backend_service_client</module>
-   <module>starseaoj_backend_user_service</module>
+    <module>starseaoj_backend_common</module>
+    <module>starseaoj-backend-gateway</module>
+    <module>starseaoj_backend_judge_service</module>
+    <module>starseaoj_backend_model</module>
+    <module>starseaoj_backend_question_service</module>
+    <module>starseaoj_backend_service_client</module>
+    <module>starseaoj_backend_user_service</module>
 </modules>
 ```
 
@@ -2729,9 +2729,9 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 ```xml
 
 <parent>
-   <groupId>com.starseaoj</groupId>
-   <artifactId>starseaoj_backend_microservice</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+    <groupId>com.starseaoj</groupId>
+    <artifactId>starseaoj_backend_microservice</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
 </parent>
 ```
 
@@ -2751,43 +2751,41 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 
 ```xml
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+</dependency>
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.9.1</version>
-        </dependency>
+<dependency>
+<groupId>com.google.code.gson</groupId>
+<artifactId>gson</artifactId>
+<version>2.9.1</version>
+</dependency>
         <!-- https://github.com/alibaba/easyexcel -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>easyexcel</artifactId>
-            <version>3.1.1</version>
-        </dependency>
+<dependency>
+<groupId>com.alibaba</groupId>
+<artifactId>easyexcel</artifactId>
+<version>3.1.1</version>
+</dependency>
         <!-- https://hutool.cn/docs/index.html#/-->
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-            <version>5.8.8</version>
-        </dependency>
+<dependency>
+<groupId>cn.hutool</groupId>
+<artifactId>hutool-all</artifactId>
+<version>5.8.8</version>
+</dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
-        </dependency>
+<dependency>
+<groupId>org.apache.commons</groupId>
+<artifactId>commons-collections4</artifactId>
+<version>4.4</version>
+</dependency>
         <!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.5.2</version>
-        </dependency>
+<dependency>
+<groupId>com.baomidou</groupId>
+<artifactId>mybatis-plus-boot-starter</artifactId>
+<version>3.5.2</version>
+</dependency>
 ```
-
-
 
 #### 2.model 模型模块：很多服务公用的实体类
 
@@ -2796,6 +2794,7 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 引入common模块依赖：
 
 ```xml
+
 <dependencies>
     <dependency>
         <groupId>com.starseaoj</groupId>
@@ -2804,8 +2803,6 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
     </dependency>
 </dependencies>
 ```
-
-
 
 #### 3.公共接口模块 service_client：只存放接口，不存放实现（多个服务之间要共享）
 
@@ -2816,6 +2813,7 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 openfeign需要添加版本：
 
 ```xml
+
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-openfeign</artifactId>
@@ -2823,31 +2821,28 @@ openfeign需要添加版本：
 </dependency>
 ```
 
-
-
 #### 4.具体业务服务实现（user、question、judge）
 
 给三个业务服务模块（user、question、judge）和网关引入公共依赖：
 
 ```xml
+
 <dependency>
     <groupId>com.starseaoj</groupId>
     <artifactId>starseaoj_backend_common</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 </dependency>
 <dependency>
-    <groupId>com.starseaoj</groupId>
-    <artifactId>starseaoj_backend_model</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+<groupId>com.starseaoj</groupId>
+<artifactId>starseaoj_backend_model</artifactId>
+<version>0.0.1-SNAPSHOT</version>
 </dependency>
 <dependency>
-    <groupId>com.starseaoj</groupId>
-    <artifactId>starseaoj_backend_service_client</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+<groupId>com.starseaoj</groupId>
+<artifactId>starseaoj_backend_service_client</artifactId>
+<version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
-
-
 
 再添加配置文件application.yml，每个模块都需要修改name、port和api-rule-resources:：
 
@@ -2916,11 +2911,10 @@ codesandbox:
   type: remote
 ```
 
-
-
 启动类修改注解：
 
 ```java
+
 @SpringBootApplication
 @MapperScan("com.starseaoj.questionservice.mapper")
 @EnableScheduling
@@ -2933,8 +2927,6 @@ public class StarseaojBackendQuestionServiceApplication {
 }
 ```
 
-
-
 若启动子模块时报错nacos配置问题，可以先将父模块pom.xml的nacos依赖注释掉！
 
 <img src="assets/Snipaste_2024-08-24_22-43-20.png" alt="Snipaste_2024-08-24_22-43-20" style="zoom: 67%;" />
@@ -2943,21 +2935,15 @@ public class StarseaojBackendQuestionServiceApplication {
 
 <img src="assets/Snipaste_2024-08-26_19-47-00.png" alt="Snipaste_2024-08-26_19-47-00" style="zoom: 80%;" />
 
-
-
 ### 服务内部调用
 
 由于代码分到了不同的模块，因此当一个模块依赖另一个模块时，会出现找不到对应的bean的情况。
 
 对此可以使用 Open Feign 组件实现跨服务的远程调用。
 
-
-
 Open Feign：Http 调用客户端，提供了更方便的方式远程调用其他服务，不用关心服务的调用地址
 
 Nacos 注册中心获取服务调用地址
-
-
 
 #### 1.梳理各服务间的调用关系，确定提供哪些服务
 
@@ -2984,8 +2970,6 @@ questionSubmitService.updateById(questionSubmitUpdate)
 **判题服务：**
 
 judgeService.doJudge(questionSubmitId)
-
-
 
 #### 2.实现FeignClient接口
 
@@ -3073,15 +3057,11 @@ server:
     context-path: /api/user
 ```
 
-
-
 #### 3.修改调用方代码以及编写实现类
 
 修改调用方代码，如将UserService改为UserFeignClient。
 
 ![Snipaste_2024-09-01_19-57-17](assets/Snipaste_2024-09-01_19-57-17.png)
-
-
 
 在服务提供方的controller层，编写FeignClient接口的实现类
 
@@ -3090,7 +3070,7 @@ server:
  * 内部调用服务
  */
 @RestController
-@RequestMa("/inner")
+@RequestMapping("/inner")
 public class UserInnerController implements UserFeignClient {
 
     @Resource
@@ -3107,7 +3087,7 @@ public class UserInnerController implements UserFeignClient {
     public User getById(@RequestParam("userId") long userId) {
         return userService.getById(userId);
     }
-    
+
     /**
      * 根据id获取用户列表
      *
@@ -3121,8 +3101,6 @@ public class UserInnerController implements UserFeignClient {
     }
 }
 ```
-
-
 
 #### 4.添加nacos配置
 
@@ -3140,8 +3118,6 @@ public class UserInnerController implements UserFeignClient {
 </dependency>
 ```
 
-
-
 给业务服务模块和网关模块增加nacos配置：
 
 ```yaml
@@ -3151,8 +3127,6 @@ spring:
         discovery:
           server-addr: 127.0.0.1:8848
 ```
-
-
 
 在服务模块启动类上添加feign相关注解
 
@@ -3165,8 +3139,6 @@ spring:
 @EnableFeignClients(basePackages = "com.starseaoj.serviceclient") 
 ```
 
-
-
 #### 5.启动服务模块进行测试
 
 调用题目模块的接口，返回未登录，说明成功调用了用户服务。
@@ -3175,19 +3147,24 @@ spring:
 
 ![Snipaste_2024-09-01_20-27-35](assets/Snipaste_2024-09-01_20-27-35.png)
 
-![Snipaste_2024-09-01_20-28-21](assets/Snipaste_2024-09-01_20-28-21.png)
-
-
+![image-20240901222302574](assets/image-20240901222302574.png)
 
 ### 微服务网关
 
-按照我的理解，网关的主要作用就是分发。比如原先前端的请求都是发往8101端口的，那么现在就让网关使用8101端口，再根据请求地址的前缀如judge、user、question等进行分发到其他的端口，即转到其他的微服务。
+#### **个人理解**
 
+网关的主要作用就是分发。比如原先前端的请求都是发往8101端口的，那么现在就让网关使用8101端口，再根据请求地址的前缀如judge、user、question等进行分发到其他的端口，即转到其他的微服务。
 
+#### 为什么要用？
 
+- 所有的服务端口不同，增大了前端调用成本
+- 所有服务是分散的，需要集中进行管理、操作，比如集中解决跨域、鉴权、接口文档、服务的路由、接口安全性、流量染色、限流
 
+#### GateWay和Nginx
 
+Gateway 是应用层网关：有一定的业务逻辑（比如根据用户信息判断权限）
 
+Nginx 是接入层网关：比如每个请求的日志，通常没有业务逻辑
 
 ## Bug 解决
 
@@ -3329,31 +3306,28 @@ exec();
 }
 ```
 
-
-
 ### 9.微服务分模块后，子模块端口配置不生效
 
 在user_service子模块中的application.yml中定义端口为8102，启动后却是8080.
 
 排查后发现，端口被另一个子模块的application.properties文件中定义的8080覆盖了。若将application.properties改为application.yml即可正常配置端口为8102。
 
-分析：查阅SpringBoot文档及相关资料后得知：默认SpringBoot会加载classpath:application.yml、classpath:config/application.yml等路径下的配置文件，但是上述规则子模块之间会相互覆盖，最终只有一个application.yml配置文件生效。
+分析：查阅SpringBoot文档及相关资料后得知：默认SpringBoot会加载classpath:application.yml、classpath:
+config/application.yml等路径下的配置文件，但是上述规则子模块之间会相互覆盖，最终只有一个application.yml配置文件生效。
 
-优先级：1.按文件类型：properties> yml> yaml。 2.按路径：项目所在目录的config目录下>项目所在目录目录下>classpath的/config目录>classpath的根目录。3. 外部命令设定（jar包外的参数 > jar包内的配置）
+优先级：1.按文件类型：properties> yml> yaml。 2.按路径：项目所在目录的config目录下>项目所在目录目录下>
+classpath的/config目录>classpath的根目录。3. 外部命令设定（jar包外的参数 > jar包内的配置）
 
 因此解决方法有：1.将另一个子模块的application.properties改为application.yml。2.将user_service子模块中的application.yml放到resource/config目录下。3.设置idea启动类，直接配置端口。
 
 第二种方法会影响其他子模块，第三种比较麻烦且和项目本身无关，因此选择第一种。
 
-
-
 ### 10.报错java.lang.IllegalStateException: Service id not legal hostname (starseaoj_backend_judge_service)
 
-查阅后得知：在 Spring Cloud OpenFeign 中，服务 ID 需要遵循合法的主机名规则，这通常意味着服务 ID 只能包含字母、数字和连字符（-），并且不能以连字符开头或结尾。
+查阅后得知：在 Spring Cloud OpenFeign 中，服务 ID 需要遵循合法的主机名规则，这通常意味着服务 ID
+只能包含字母、数字和连字符（-），并且不能以连字符开头或结尾。
 
 将服务名中的_改为-即可。
-
-
 
 ### 11.nacos配置中心的服务ip错误
 
@@ -3361,19 +3335,13 @@ exec();
 
 ![Snipaste_2024-09-01_22-03-07](assets/Snipaste_2024-09-01_22-03-07.png)
 
-
-
 访问nacos管理界面，查看用户服务，发现ip地址并不是本机ip。
 
 ![image-20240901220836017](assets/image-20240901220836017.png)
 
-
-
 查看ip配置发现使用的是虚拟机网卡的ip地址
 
 ![image-20240901220924030](assets/image-20240901220924030.png)
-
-
 
 解决方法：给各个服务和网关的配置文件中添加ip字段指定
 
@@ -3385,8 +3353,6 @@ spring:
         server-addr: 8.134.202.187:8848
         ip: 127.0.0.1
 ```
-
-
 
 ### 12.
 
