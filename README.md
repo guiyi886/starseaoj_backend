@@ -3166,6 +3166,67 @@ Gateway 是应用层网关：有一定的业务逻辑（比如根据用户信息
 
 Nginx 是接入层网关：比如每个请求的日志，通常没有业务逻辑
 
+#### 接口路由
+
+统一地接受前端的请求，转发请求到对应的服务
+
+编写路由配置，通过 api 地址前缀来找到对应的服务 。注意启动类上要排除数据库配置类。
+
+```yaml
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 8.134.202.187:8848
+        ip: 127.0.0.1
+    gateway:
+      routes:
+        - id: starseaoj-backend-user-service
+          uri: lb://starseaoj-backend-user-service
+          predicates:
+            - Path=/api/user/**
+        - id: starseaoj-backend-question-service
+          uri: lb://starseaoj-backend-question-service
+          predicates:
+            - Path=/api/question/**
+        - id: starseaoj-backend-judge-service
+          uri: lb://starseaoj-backend-judge-service
+          predicates:
+            - Path=/api/judge/**
+  application:
+    name: starseaoj-backend-gateway
+  main:
+    web-application-type: reactive
+server:
+  port: 8081
+```
+
+```java
+// 排除数据库配置
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+@EnableScheduling
+@EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
+@ComponentScan("com.starseaoj")
+@EnableDiscoveryClient
+public class StarseaojBackendGatewayApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(StarseaojBackendGatewayApplication.class, args);
+    }
+
+}
+```
+
+#### 聚合文档
+
+
+
+
+
+
+
+
+
 ## Bug 解决
 
 ### 1.md文档上传到github后图片不显示。
