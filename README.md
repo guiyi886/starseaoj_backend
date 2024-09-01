@@ -2705,7 +2705,7 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 
 按照前面的划分进行模块的创建。
 
-![Snipaste_2024-08-20_10-08-27](photo/Snipaste_2024-08-20_10-08-27.png)
+<img src="photo/Snipaste_2024-08-20_10-08-27.png" alt="Snipaste_2024-08-20_10-08-27" style="zoom:80%;" />
 
 在父模块starseaoj_backend_microservice的pom.xml文件中添加子模块名称。
 
@@ -2735,13 +2735,13 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 
 最终右侧maven划分如下所示
 
-![Snipaste_2024-08-20_10-25-05](photo/Snipaste_2024-08-20_10-25-05.png)
+<img src="photo/Snipaste_2024-08-20_10-25-05.png" alt="Snipaste_2024-08-20_10-25-05" style="zoom:80%;" />
 
 ### 微服务整合
 
 #### 1.common 公共模块：全局异常处理器、请求响应封装类、公用的工具类等
 
-![Snipaste_2024-08-20_13-01-57](photo/Snipaste_2024-08-20_13-01-57.png)
+<img src="photo/Snipaste_2024-08-20_13-01-57.png" alt="Snipaste_2024-08-20_13-01-57" style="zoom:80%;" />
 
 
 
@@ -2789,7 +2789,7 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 
 #### 2.model 模型模块：很多服务公用的实体类
 
-![Snipaste_2024-08-20_14-16-01](photo/Snipaste_2024-08-20_14-16-01.png)
+<img src="photo/Snipaste_2024-08-20_14-16-01.png" alt="Snipaste_2024-08-20_14-16-01" style="zoom:80%;" />
 
 引入common模块依赖：
 
@@ -2809,7 +2809,7 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 
 先搬运所有的 service，judgeService 也需要搬运。
 
-![Snipaste_2024-08-20_23-21-21](photo/Snipaste_2024-08-20_23-21-21.png)
+<img src="photo/Snipaste_2024-08-20_23-21-21.png" alt="Snipaste_2024-08-20_23-21-21" style="zoom:80%;" />
 
 openfeign需要添加版本：
 
@@ -2823,7 +2823,7 @@ openfeign需要添加版本：
 
 
 
-#### 4.具体业务服务实现
+#### 4.具体业务服务实现（user、question、judge）
 
 给三个业务服务模块（user、question、judge）和网关引入公共依赖：
 
@@ -2847,7 +2847,7 @@ openfeign需要添加版本：
 
 
 
-再添加配置文件application.yml：
+再添加配置文件application.yml，每个模块都需要修改name、port和api-rule-resources:：
 
 ```yaml
 # 公共配置文件
@@ -2916,25 +2916,246 @@ codesandbox:
 
 
 
+启动类修改注解：
+
+```java
+@SpringBootApplication
+@MapperScan("com.starseaoj.questionservice.mapper")
+@EnableScheduling
+@EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
+@ComponentScan("com.starseaoj")
+public class StarseaojBackendQuestionServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(StarseaojBackendQuestionServiceApplication.class, args);
+    }
+}
+```
+
+
+
 若启动子模块时报错nacos配置问题，可以先将父模块pom.xml的nacos依赖注释掉！
 
+<img src="photo/Snipaste_2024-08-24_22-43-20.png" alt="Snipaste_2024-08-24_22-43-20" style="zoom: 67%;" />
 
+<img src="photo/Snipaste_2024-08-24_22-44-23.png" alt="Snipaste_2024-08-24_22-44-23" style="zoom: 67%;" />
 
-![Snipaste_2024-08-21_01-49-30](photo/Snipaste_2024-08-21_01-49-30.png)
-
-
-
-
-
+<img src="photo/Snipaste_2024-08-26_19-47-00.png" alt="Snipaste_2024-08-26_19-47-00" style="zoom: 80%;" />
 
 
 
+### 服务内部调用
+
+由于代码分到了不同的模块，因此当一个模块依赖另一个模块时，会出现找不到对应的bean的情况。
+
+对此可以使用 Open Feign 组件实现跨服务的远程调用。
+
+
+
+Open Feign：Http 调用客户端，提供了更方便的方式远程调用其他服务，不用关心服务的调用地址
+
+Nacos 注册中心获取服务调用地址
+
+
+
+#### 1.梳理各服务间的调用关系，确定提供哪些服务
+
+**用户服务：**
+
+userService.getById(userId)
+
+userService.getUserVO(user)
+
+userService.listByIds(userIdSet)
+
+userService.isAdmin(loginUser)
+
+userService.getLoginUser(request)
+
+**题目服务：**
+
+questionService.getById(questionId)
+
+questionSubmitService.getById(questionSubmitId)
+
+questionSubmitService.updateById(questionSubmitUpdate)
+
+**判题服务：**
+
+judgeService.doJudge(questionSubmitId)
+
+
+
+#### 2.实现FeignClient接口
+
+对于一些不利于远程调用参数传递、或者实现起来非常简单（工具类）的方法，可以直接用默认方法实现，无需远程调用，节约性能
+
+@FeignClient 开启 openfeign 的支持，把接口暴露出去（服务注册到注册中心上），作为 API 给其他服务调用（其他服务从注册中心寻找）
+
+需要修改每个服务提供者application.yml的 context-path 全局请求路径
+
+服务提供者：理解为接口的实现类，实际提供服务的模块（服务注册到注册中心上）
+
+服务消费者：理解为接口的调用方，需要去找到服务提供者，然后调用。（其他服务从注册中心寻找）
+
+```java
+/**
+ * 用户服务
+ */
+@FeignClient(name = "starseaoj-backend-user-service", path = "/api/user/inner")
+public interface UserFeignClient {
+
+    /**
+     * 根据id获取用户
+     * @param userId
+     * @return
+     */
+    @GetMapping("/get/id")
+    User getById(@RequestParam("userId") long userId);
+
+    /**
+     * 根据id获取用户列表
+     * @param userIdList
+     * @return
+     */
+    @GetMapping("/get/ids")
+    List<User> listByIds(@RequestParam("userIdList") Collection<Long> userIdList);
+
+    /**
+     * 获取当前登录用户
+     * default默认实现，相当于工具类方法
+     * @param request
+     * @return
+     */
+    default User getLoginUser(HttpServletRequest request) {
+        // 先判断是否已登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        return currentUser;
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @param user
+     * @return
+     */
+    default boolean isAdmin(User user) {
+        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
+    }
+
+    /**
+     * 获取脱敏的用户信息
+     *
+     * @param user
+     * @return
+     */
+    default UserVO getUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
+    }
+}
+```
+
+```yaml
+server:
+  address: localhost
+  port: 8102
+  servlet:
+    context-path: /api/user
+```
+
+
+
+#### 3.修改调用方代码以及编写实现类
+
+修改调用方代码，如将UserService改为UserFeignClient。
+
+![Snipaste_2024-09-01_19-57-17](photo/Snipaste_2024-09-01_19-57-17.png)
+
+
+
+在服务提供方的controller层，编写FeignClient接口的实现类
+
+```java
+/**
+ * 内部调用服务
+ */
+@RestController("/inner")
+public class UserInnerController implements UserFeignClient {
+
+    @Resource
+    private UserService userService;
+
+    /**
+     * 根据id获取用户
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    @GetMapping("/get/id")
+    public User getById(@RequestParam("userId") long userId) {
+        return userService.getById(userId);
+    }
+    
+    /**
+     * 根据id获取用户列表
+     *
+     * @param userIdList
+     * @return
+     */
+    @Override
+    @GetMapping("/get/ids")
+    public List<User> listByIds(@RequestParam("userIdList") Collection<Long> userIdList) {
+        return userService.listByIds(userIdList);
+    }
+}
+```
+
+
+
+#### 4.添加nacos配置
+
+全局引入nacos依赖和负载均衡器依赖
+
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+    <version>3.1.3</version>
+</dependency>
+```
+
+
+
+所有模块引入 Nacos 依赖，然后给业务服务（包括网关）增加配置：
+
+```yaml
+spring:
+    cloud:
+      nacos:
+        discovery:
+          server-addr: 127.0.0.1:8848
+```
 
 
 
 
 
-## Bug 解决
+
+
+## 九、Bug 解决
 
 ### 1.md文档上传到github后图片不显示。
 
@@ -3074,3 +3295,26 @@ exec();
 }
 ```
 
+
+
+### 9.微服务分模块后，子模块端口配置不生效
+
+在user_service子模块中的application.yml中定义端口为8102，启动后却是8080.
+
+排查后发现，端口被另一个子模块的application.properties文件中定义的8080覆盖了。若将application.properties改为application.yml即可正常配置端口为8102。
+
+分析：查阅SpringBoot文档及相关资料后得知：默认SpringBoot会加载classpath:application.yml、classpath:config/application.yml等路径下的配置文件，但是上述规则子模块之间会相互覆盖，最终只有一个application.yml配置文件生效。
+
+优先级：1.按文件类型：properties> yml> yaml。 2.按路径：项目所在目录的config目录下>项目所在目录目录下>classpath的/config目录>classpath的根目录。3. 外部命令设定（jar包外的参数 > jar包内的配置）
+
+因此解决方法有：1.将另一个子模块的application.properties改为application.yml。2.将user_service子模块中的application.yml放到resource/config目录下。3.设置idea启动类，直接配置端口。
+
+第二种方法会影响其他子模块，第三种比较麻烦且和项目本身无关，因此选择第一种。
+
+
+
+### 10.报错java.lang.IllegalStateException: Service id not legal hostname (starseaoj_backend_judge_service)
+
+查阅后得知：在 Spring Cloud OpenFeign 中，服务 ID 需要遵循合法的主机名规则，这通常意味着服务 ID 只能包含字母、数字和连字符（-），并且不能以连字符开头或结尾。
+
+将服务名中的_改为-即可。
