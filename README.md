@@ -3281,6 +3281,37 @@ server:
         path: /api
 ```
 
+#### 分布式 Session 登录
+
+引入spring data redis 依赖：
+
+```xml
+    <!-- redis -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.session</groupId>
+        <artifactId>spring-session-data-redis</artifactId>
+    </dependency>
+```
+
+添加path: /api 解决 cookie 跨路径问题：
+
+```yaml
+server:
+  address: localhost
+  port: 8104
+  servlet:
+    context-path: /api/judge
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+        path: /api
+```
+
 #### 跨域配置
 
 ```java
