@@ -3219,11 +3219,67 @@ public class StarseaojBackendGatewayApplication {
 
 #### 聚合文档
 
+1.先给三个服务模块引入knife4j依赖，并在配置文件中开启接口文档。
+
+```xml
+<dependency>
+    <groupId>com.github.xiaoymin</groupId>
+    <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
+    <version>4.3.0</version>
+</dependency>
+```
+
+```yaml
+knife4j:
+  enable: true
+```
 
 
 
+2.网关模块引入依赖，并添加配置。
+
+```xml
+<dependency>
+    <groupId>com.github.xiaoymin</groupId>
+    <artifactId>knife4j-gateway-spring-boot-starter</artifactId>
+    <version>4.3.0</version>
+</dependency>
+```
+
+```yaml
+knife4j:
+  gateway:
+    # ① 第一个配置，开启gateway聚合组件
+    enabled: true
+    # ② 第二行配置，设置聚合模式采用discover服务发现的模式
+    strategy: discover
+    discover:
+      # ③ 第三行配置，开启discover模式
+      enabled: true
+      # ④ 第四行配置，聚合子服务全部为Swagger2规范的文档
+      version: swagger2
+```
 
 
+
+3.启动三个服务模块和网关模块，访问http://localhost:8101/doc.html，可以便捷的进行各个模块的切换。
+
+![image-20240903111405957](assets/image-20240903111405957.png)
+
+解决 cookie 跨路径问题：添加path: /api
+
+```yaml
+server:
+  address: localhost
+  port: 8103
+  servlet:
+    context-path: /api/question
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+        path: /api
+```
 
 
 
@@ -3415,5 +3471,40 @@ spring:
         ip: 127.0.0.1
 ```
 
-### 12.
+### 12.引入分布式session的redis依赖后knief4j文档请求异常
+
+```xml
+<dependency>
+    <groupId>org.springframework.session</groupId>
+    <artifactId>spring-session-data-redis</artifactId>
+</dependency>
+```
+
+ `HTTP 500 – Internal Server Error`，这是服务器端错误。错误信息指向反序列化（Deserialization）过程中的问题，主要是因为找不到指定的类 `com.guiyi.starseaoj.model.entity.User`。
+
+<!doctype html> <html lang="en">     <head>         <title>HTTP Status 500 – Internal Server Error</title>         <style type="text/css">             body {                 font-family: Tahoma,Arial,sans-serif;             }              h1, h2, h3, b {                 color: white;                 background-color: #525D76;             }              h1 {                 font-size: 22px;             }              h2 {                 font-size: 16px;             }              h3 {                 font-size: 14px;             }              p {                 font-size: 12px;             }              a {                 color: black;             }              .line {                 height: 1px;                 background-color: #525D76;                 border: none;             }         </style>     </head>     <body>         <h1>HTTP Status 500 – Internal Server Error</h1>         <hr class="line"/>         <p>             <b>Type</b>             Exception Report         </p>         <p>             <b>Message</b>             Cannot deserialize; nested exception is org.springframework.core.serializer.support.SerializationFailedException: Failed to deserialize payload. Is the byte array a result of corresponding serialization for DefaultDeserializer?; nested exception is org.springframework.core.NestedIOException: Failed to deserialize object type; nested exception is java.lang.ClassNotFoundException: com.guiyi.starseaoj.model.entity.User         </p>         <p>             <b>Description</b>             The server encountered an unexpected condition that prevented it from fulfilling the request.         </p>         <p>             <b>Exception</b>         </p>         <pre>org.springframework.data.redis.serializer.SerializationException: Cannot deserialize; nested exception is org.springframework.core.serializer.support.SerializationFailedException: Failed to deserialize payload. Is the byte array a result of corresponding serialization for DefaultDeserializer?; nested exception is org.springframework.core.NestedIOException: Failed to deserialize object type; nested exception is java.lang.ClassNotFoundException: com.guiyi.starseaoj.model.entity.User 	org.springframework.data.redis.serializer.JdkSerializationRedisSerializer.deserialize(JdkSerializationRedisSerializer.java:84)
+...
+注意到包名为com.guiyi.starseaoj，并不是微服务改造后的项目包名，那么应该是redis缓存残留，清空redis缓存后即正常。
+
+
+### 13.微服务改造项目后登录信息无法互通
+
+测试接口时发现，用户模块登录后再去测试题目模块，提示未登录。
+
+后端排查后发现sessionid不一致，需要统一path路径为 /api 。
+
+```yaml
+server:
+  address: localhost
+  port: 8103
+  servlet:
+    context-path: /api/question
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+        path: /api
+```
+
+### 14.
 
