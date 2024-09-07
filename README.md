@@ -3608,7 +3608,124 @@ public class MyMessageConsumer {
 }
 ```
 
+## 部署上线
 
+### 前言
+
+之前部署上线过项目，采用的是逐一配置环境的方式，比较繁琐，后面了解到有一键部署的方式，比如宝塔面板，因此这次决定采用这种方式。
+
+原先打算部署的云服务器是2核2G的，在使用docker安装启动了mysql、rabbitmq、redis、nacos等容器后就已经有点不堪重负了。而微服务项目又要启动多个，因此决定将前后端项目部署在新的2核4G的云服务器上以确保可用性。
+
+域名的话这次不打算购买，前前后后流程备案流程繁琐且要一个月，直接用ip访问网站即可。
+
+### 项目打包
+
+#### 后端——微服务项目
+
+1.移除父模块pom.xml文件中的configuration和executions部分，避免影响子模块打包。
+
+```xml
+<configuration>
+    <mainClass>com.starseaoj.starseaoj_backend_microservice.StarseaojBackendMicroserviceApplication
+    </mainClass>
+    <skip>true</skip>
+</configuration>
+<executions>
+    <execution>
+        <id>repackage</id>
+        <goals>
+            <goal>repackage</goal>
+        </goals>
+    </execution>
+</executions>
+```
+
+2.给三个业务模块和网关模块的pom.xml文件添加executions部分，确保子模块打包时包含公共模块。
+
+```xml
+<executions>
+    <execution>
+        <id>repackage</id>
+        <goals>
+            <goal>repackage</goal>
+        </goals>
+    </execution>
+</executions>
+```
+
+3.使用package命令打包。
+
+![image-20240907170001764](assets/image-20240907170001764.png)
+
+#### 后端——代码沙箱项目
+
+同理用package命令进行打包。
+
+![image-20240907172455904](assets/image-20240907172455904.png)
+
+#### 前端项目
+
+1.npm run build打包生成dist文件夹。
+
+![image-20240907172350146](assets/image-20240907172350146.png)
+
+### 宝塔面板
+
+1.云服务器安全组开放端口
+
+![image-20240907161301519](assets/image-20240907161301519.png)
+
+![image-20240907161405096](assets/image-20240907161405096.png)
+
+2.ssh连接云服务器然后安装宝塔，记住访问网址和账号密码。
+
+![image-20240907161521093](assets/image-20240907161521093.png)
+
+3.本地打开网址，输入账号密码登录，选择需要的工具等待安装完成。
+
+![image-20240907162213780](assets/image-20240907162213780.png)
+
+4.将打包后的文件上传到服务器/usr/starseaoj目录下
+
+![image-20240907172859901](assets/image-20240907172859901.png)
+
+5.配置前端项目，然后直接访问http://139.159.248.204/即可打开页面，没有数据是因为后端项目还没启动。
+
+![image-20240907175345363](assets/image-20240907175345363.png)
+
+![image-20240907175420152](assets/image-20240907175420152.png)
+
+6.使用**nohup java -jar xxx.jar &**命令长期启动三个业务服务、一个网关服务、一个代码沙箱，注意不要用java -jar，否则关闭终端会导致后端关闭。
+
+跟踪实时日志输出可以使用tail -f nohup.out命令。
+
+查看java进程可以使用ps -ef | grep 'java'命令。
+
+虽然应该没有影响但还是尽量按调用先后顺序启动。
+
+```bash
+nohup java -jar starseaoj-backend-gateway-0.0.1-SNAPSHOT.jar &
+nohup java -jar starseaoj-backend-user-service-0.0.1-SNAPSHOT.jar &
+nohup java -jar starseaoj-backend-question-service-0.0.1-SNAPSHOT.jar &
+nohup java -jar starseaoj-backend-judge-service-0.0.1-SNAPSHOT.jar &
+nohup java -jar starseaoj_code_sandbox-0.0.1-SNAPSHOT.jar &
+tail -f nohup.out
+ps -ef
+ps -ef | grep 'java'
+kill 'PID'
+```
+
+7.查看nacos注册中心，发现三个业务服务和网关服务均在线，代码沙箱服务不在是因为没有注册到nacos。
+
+![image-20240907182000477](assets/image-20240907182000477.png)
+
+8.解决各种问题后，网站终于可以正常访问和显示数据了。
+
+![image-20240907214131473](assets/image-20240907214131473.png)
+
+9.在宝塔首页可以监控cpu、内存、存储空间等情况。在几乎未访问网站的情况下，并且mysql、redis、rabbitmq、redis都是部署在另一台云服务器上，内存都使用了3G，由此可见该微服务项目确实很占用内存，新开一台4G内存的云服务器是必需的。
+
+![image-20240907214426874](assets/image-20240907214426874.png)
 
 ## Bug 解决
 
@@ -3809,8 +3926,11 @@ spring:
 
  `HTTP 500 – Internal Server Error`，这是服务器端错误。错误信息指向反序列化（Deserialization）过程中的问题，主要是因为找不到指定的类 `com.guiyi.starseaoj.model.entity.User`。
 
+```text
 <!doctype html> <html lang="en">     <head>         <title>HTTP Status 500 – Internal Server Error</title>         <style type="text/css">             body {                 font-family: Tahoma,Arial,sans-serif;             }              h1, h2, h3, b {                 color: white;                 background-color: #525D76;             }              h1 {                 font-size: 22px;             }              h2 {                 font-size: 16px;             }              h3 {                 font-size: 14px;             }              p {                 font-size: 12px;             }              a {                 color: black;             }              .line {                 height: 1px;                 background-color: #525D76;                 border: none;             }         </style>     </head>     <body>         <h1>HTTP Status 500 – Internal Server Error</h1>         <hr class="line"/>         <p>             <b>Type</b>             Exception Report         </p>         <p>             <b>Message</b>             Cannot deserialize; nested exception is org.springframework.core.serializer.support.SerializationFailedException: Failed to deserialize payload. Is the byte array a result of corresponding serialization for DefaultDeserializer?; nested exception is org.springframework.core.NestedIOException: Failed to deserialize object type; nested exception is java.lang.ClassNotFoundException: com.guiyi.starseaoj.model.entity.User         </p>         <p>             <b>Description</b>             The server encountered an unexpected condition that prevented it from fulfilling the request.         </p>         <p>             <b>Exception</b>         </p>         <pre>org.springframework.data.redis.serializer.SerializationException: Cannot deserialize; nested exception is org.springframework.core.serializer.support.SerializationFailedException: Failed to deserialize payload. Is the byte array a result of corresponding serialization for DefaultDeserializer?; nested exception is org.springframework.core.NestedIOException: Failed to deserialize object type; nested exception is java.lang.ClassNotFoundException: com.guiyi.starseaoj.model.entity.User 	org.springframework.data.redis.serializer.JdkSerializationRedisSerializer.deserialize(JdkSerializationRedisSerializer.java:84)
-...
+```
+
+
 注意到包名为com.guiyi.starseaoj，并不是微服务改造后的项目包名，那么应该是redis缓存残留，清空redis缓存后即正常。
 
 
@@ -3846,4 +3966,176 @@ rabbitmq-plugins enable rabbitmq_management
 
 查阅资料后发现不能直接new，要使用@Autowired或者@Resource注解，交给spring管理。
 
-### 16.
+### 16.修改question表的自增长起始值AUTO_INCREMENT失败
+
+使用alter table question AUTO_INCREMENT = 10;命令修改，运行成功了。
+
+使用SHOW  table STATUS LIKE 'question'命令查看发现并未修改，还是很大的值。
+
+查阅许多资料后发现还需要使用ANALYSE命令重新分析表，使得修改生效。
+
+```sql
+alter table question AUTO_INCREMENT = 10;
+ANALYZE TABLE question
+```
+
+### 17.Nacos容器在启动一段时间后会自动关闭
+
+使用dmesg命令查看系统日志，发现日志中有如下片段。
+
+```bash
+[ 3738.060303] [ 5227]   999  5227      719       26       5        0             0 df
+[ 3738.061106] [ 5228]     0  5228    28951      707      10        0             0 bash
+[ 3738.061977] [ 5229]     0  5229    28951      707      12        0             0 bash
+[ 3738.062775] [ 5230]     0  5230    28951      707      12        0             0 bash
+[ 3738.063550] [ 5231]     0  5231     3802       27      11        0             0 ls
+[ 3738.064319] [ 5232]     0  5232    28196       50      11        0             0 grep
+[ 3738.065102] Out of memory: Kill process 3946 (java) score 470 or sacrifice child
+[ 3738.065889] Killed process 3946 (java), UID 0, total-vm:3920320kB, anon-rss:851884kB, file-rss:0kB, shmem-rss:0kB
+[ 3740.401707] docker0: port 3(vethc35dbcc) entered disabled state
+[ 3740.406679] docker0: port 3(vethc35dbcc) entered disabled state
+[ 3740.408167] device vethc35dbcc left promiscuous mode
+[ 3740.408952] docker0: port 3(vethc35dbcc) entered disabled state
+```
+
+由此可知是因为**内存不足** 导致 Nacos 运行的 Java 进程被系统强制终止。
+
+解决：修改创建容器时的命令，扩大堆内存。
+
+```bash
+docker run -d --name nacos \
+  -e MODE=standalone \
+  -e JVM_XMS=512m \
+  -e JVM_XMX=1024m \
+  -e JVM_XMN=256m \
+  --memory=2g --memory-swap=2g \
+  -p 8848:8848 -p 9848:9848 -p 9849:9849 \
+  nacos/nacos-server:v2.2.0
+```
+
+### 18.前后端项目均部署启动后页面未正常显示
+
+![image-20240907182127709](assets/image-20240907182127709.png)
+
+![image-20240907182147736](assets/image-20240907182147736.png)
+
+查看了下nacos注册中心，用户服务是有成功启动并注册的。
+
+看到localhost的时候突然明白了，这个问题之前遇到过的，需要改为服务器ip，不然会向用户本地发送请求。
+
+解决方法：可以修改配置文件后重新打包并部署，但是太麻烦了，因为有多个。可以直接新建一个application.yml配置文件修改ip放到和jar包相同目录下，因为优先级更高所以会覆盖执之前的ip设定。
+
+```yml
+spring:
+  cloud:
+    nacos:
+      discovery:
+        ip: 139.159.248.204
+```
+
+将原先启动 jar包的进程kill掉后再启动即可。
+
+![image-20240907190242540](assets/image-20240907190242540.png)
+
+![image-20240907190656016](assets/image-20240907190656016.png)
+
+发现ip是修改了，但是原来那个还在。使用ps -ef | grep 'java'命令查看一下当前java进程，发现并没有多余的启动项。
+
+![image-20240907190754243](assets/image-20240907190754243.png)
+
+使用ps -ef查看所有进程也没有发现什么特殊的进程，搜了下发现也有其他人遇到过下线服务还在nacos上，但是未明确原因。
+
+猜测是nacos出错，或许是缓存什么的问题？
+
+因此将nacos容器删除后再重新创建，发现那两个服务还是有两个实例。
+
+![image-20240907191729508](assets/image-20240907191729508.png)
+
+将部署项目的云服务器关机，发现那两个实例都还在。。。
+
+排除了这两个云服务器，我突然有一个想法，会不会是本地还在运行？
+
+看了下idea，确定是没有启动这两个服务的。
+
+那么只能查一下对应的8101端口和8104端口了。
+
+发现 还真是后台有残留进程，将其关闭后nacos多出来的那两个nacos实例就没有了。
+
+后续发现补充：大概率是因为之前移动打包的jar包时不小心双击启动了（系统没有任何启动显示）
+
+```bash
+netstat -ano | findstr 8101	# 查看端口占用情况
+tasklist /FI "PID eq 28796"	# 查看PID对应的程序名称
+taskkill /F /PID 28796		# 结束该进程 
+```
+
+![image-20240907194204963](assets/image-20240907194204963.png)
+
+![image-20240907194248797](assets/image-20240907194248797.png)
+
+vue项目需要更改请求地址ip后重新打包后上传
+
+![image-20240907195005423](assets/image-20240907195005423.png)
+
+### 19.网关调用其他服务失败
+
+查看日志文件可知，调用用户服务时失败。
+
+```bash
+2024-09-07 20:16:45.250 ERROR 2763 --- [or-http-epoll-4] a.w.r.e.AbstractErrorWebExceptionHandler : [51fa9c9f]  500 Server Error for HTTP GET "/api/user/get/login"
+
+io.netty.channel.AbstractChannel$AnnotatedConnectException: finishConnect(..) failed: Connection refused: /139.159.248.204:8102
+	Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException: 
+Error has been observed at the following site(s):
+	*__checkpoint ⇢ org.springframework.web.cors.reactive.CorsWebFilter [DefaultWebFilterChain]
+	*__checkpoint ⇢ org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
+	*__checkpoint ⇢ HTTP GET "/api/user/get/login" [ExceptionHandlingWebHandler]
+Original Stack Trace:
+Caused by: java.net.ConnectException: finishConnect(..) failed: Connection refused
+	at io.netty.channel.unix.Errors.newConnectException0(Errors.java:155) ~[netty-transport-native-unix-common-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.channel.unix.Errors.handleConnectErrno(Errors.java:128) ~[netty-transport-native-unix-common-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.channel.unix.Socket.finishConnect(Socket.java:359) ~[netty-transport-native-unix-common-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.doFinishConnect(AbstractEpollChannel.java:710) ~[netty-transport-classes-epoll-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.finishConnect(AbstractEpollChannel.java:687) ~[netty-transport-classes-epoll-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.epollOutReady(AbstractEpollChannel.java:567) ~[netty-transport-classes-epoll-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.channel.epoll.EpollEventLoop.processReady(EpollEventLoop.java:489) ~[netty-transport-classes-epoll-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:397) ~[netty-transport-classes-epoll-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[netty-common-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.85.Final.jar!/:4.1.85.Final]
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.85.Final.jar!/:4.1.85.Final]
+	at java.lang.Thread.run(Thread.java:750) ~[na:1.8.0_412]
+```
+
+使用ps -ef | grep 'java'查看，发现用户服务是正常运行的。查看其日志文件也是正常的。
+
+![image-20240907212120342](assets/image-20240907212120342.png)
+
+使用netstat -tulnp命令查看端口监听情况，发现奇怪的情况，网关监听的是:::8101，而其他的监听的是127.0.0.1:8102。
+
+这会导致网关能监听到8101端口的所有情况，而其他三个服务只能监听到访问本机ip的端口情况。
+
+因此网关使用139.159.248.204:8102进行请求会调用不到服务。
+
+![image-20240907212228866](assets/image-20240907212228866.png)
+
+查阅资料发现是因为三个服务的配置文件设置地址为localhost，解析后就是127.0.0.1，因此导致了该情况。
+
+```yaml
+server:
+  address: localhost
+```
+
+应该将其改为0.0.0.0或139.159.248.204。
+
+```yml
+server:
+  address: 0.0.0.0
+```
+
+0.0.0.0并不是一个真实的的IP地址，它表示本机中所有的ip地址，即监听本机所有IP的特定端口。
+
+若设为139.159.248.204，会导致只能用该ip调用而不能用localhost或127.0.0.1调用。
+
+直接修改前面服务器三个服务模块jar包同目录下添加的配置文件后重新启动即可正常获取数据。
+
+![image-20240907214131473](assets/image-20240907214131473.png)
