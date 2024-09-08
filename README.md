@@ -1,5 +1,7 @@
 # 星海 OJ 在线判题系统
 
+![image-20240908195515468](assets/image-20240908195515468.png)
+
 ## 前言
 
 星海 OJ 在线判题系统——后端						 https://github.com/guiyi886/starseaoj_backend
@@ -32,7 +34,7 @@ CSDN博客：	 https://blog.csdn.net/qq1677852098
 
 
 
-具体开发文档请见以下部分：
+具体实现细节详见下方**开发文档**：
 
 ## 目录
 
