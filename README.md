@@ -663,42 +663,43 @@ public class ExecuteCodeRequest {
 代理模式的实现原理：
 
 1. 实现被代理的接口
+
 2. 通过构造函数接受一个被代理的接口实现类
-3. 调用被代理的接口实现类，在调用前后增加对应的操作
+
+3. 调用被代理的接口实现类，在调用前后增加对应的操作(输出日志)
 
    ```java
    /**
+    * @author guiyi
+    * @Date 2024/8/11 下午5:30:46
+    * @ClassName com.guiyi.starseaoj.judge.codesandbox.CodeSandboxProxy
+    * @function --> 代码沙箱代理类
+    */
+   @Slf4j
+   @AllArgsConstructor
+   public class CodeSandboxProxy implements CodeSandbox {
+   
+       private final CodeSandbox codeSandbox;
+   
+       @Override
+       public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+           log.info("代码沙箱请求参数：{}", executeCodeRequest.toString());
+           ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+           log.info("代码沙箱响应结果：{}", executeCodeResponse.toString());
+           return executeCodeResponse;
+       }
+   }
+   ```
 
-* @author guiyi
-* @Date 2024/8/11 下午5:30:46
-* @ClassName com.guiyi.starseaoj.judge.codesandbox.CodeSandboxProxy
-* @function --> 代码沙箱代理类
-  */
-  @Slf4j
-  @AllArgsConstructor
-  public class CodeSandboxProxy implements CodeSandbox {
+4. 使用方式：
 
-  private final CodeSandbox codeSandbox;
+   ```java
+   CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+   // 使用codeSandbox创建代理类对象重新赋值给codeSandbox
+   codeSandbox = new CodeSandboxProxy(codeSandbox);
+   ```
 
-  @Override
-  public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-  log.info("代码沙箱请求参数：{}", executeCodeRequest.toString());
-  ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
-  log.info("代码沙箱响应结果：{}", executeCodeResponse.toString());
-  return executeCodeResponse;
-  }
-  }
-  ```
-
-使用方式：
-
-```
-CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
-// 使用codeSandbox创建代理类对象重新赋值给codeSandbox
-codeSandbox = new CodeSandboxProxy(codeSandbox);
-```
-
-7. 实现示例的代码沙箱
+5. 实现示例代码沙箱:
 
    ```java
    /**
@@ -989,8 +990,9 @@ public class JudgeServiceImpl implements JudgeService {
 
 使用 IDEA 的 Spring Boot 项目初始化工具，选择 **Java 8、Spring Boot 2.7 版本**。
 
-**注意**：由于Spring Boot将来会全力支持Java17，不再维护支持Java8的版本，因此官方服务器默认禁用了对Java
-8的支持。此时需要将服务器URL改为阿里云的： https://start.aliyun.com/
+**注意**：由于Spring Boot将来会全力支持Java17，不再维护支持Java8的版本，因此官方服务器默认禁用了对Java8的支持。
+
+此处需要将服务器URL改为阿里云的： https://start.aliyun.com/
 
 ![Snipaste_2024-08-12_19-45-39](assets/Snipaste_2024-08-12_19-45-39.png)
 
@@ -1081,12 +1083,8 @@ String projectRoot = file.getParentFile().getParentFile().getPath();
 String tmpCodePath = projectRoot + File.separator + TMP_CODE_DIR;
 
 // 创建临时目录
-if(!FileUtil.
-
-exist(tmpCodePath)){
-        FileUtil.
-
-mkdir(tmpCodePath);
+if (!FileUtil.exist(tmpCodePath)) {
+    FileUtil.mkdir(tmpCodePath);
 }
 
 // 隔离存放用户代码
@@ -1103,71 +1101,45 @@ Process 的输入流 inputStream 和错误流 errorStream 获取控制台输出�
 ```java
 // 编译命令
 String compileCmd = String.format("javac %s -encoding utf-8", userCodeFile.getAbsolutePath());
-try{
-// 编译
-Process complileProcess = Runtime.getRuntime().exec(compileCmd);
-// 等待编译完成，获取进程的退出值
-int exitValue = complileProcess.waitFor();
-    if(exitValue ==0){
-        System.out.
+try {
+    // 编译
+    Process complileProcess = Runtime.getRuntime().exec(compileCmd);
+    // 等待编译完成，获取进程的退出值
+    int exitValue = complileProcess.waitFor();
+    if (exitValue == 0) {
+        System.out.println("编译成功");
 
-println("编译成功");
-
-// 获取程序输出
-// 注意是Input而不是Output，因为Process类是这么定义的，不用纠结
-BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
-StringBuilder complieOutputStringBuilder = new StringBuilder();
-String line;
-        while((line =bufferedReader.
-
-readLine())!=null){
-        complieOutputStringBuilder.
-
-append(line);
+        // 获取程序输出
+        // 注意是Input而不是Output，因为Process类是这么定义的，不用纠结
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+        StringBuilder complieOutputStringBuilder = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            complieOutputStringBuilder.append(line);
         }
-                System.out.
+        System.out.println(complieOutputStringBuilder);
+    } else {
+        System.out.println("编译失败：" + exitValue);
 
-println(complieOutputStringBuilder);
-    }else{
-            System.out.
-
-println("编译失败："+exitValue);
-
-// 获取输出流和错误流
-BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
-StringBuilder complieOutputStringBuilder = new StringBuilder();
-String line;
-        while((line =bufferedReader.
-
-readLine())!=null){
-        complieOutputStringBuilder.
-
-append(line);
+        // 获取输出流和错误流
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+        StringBuilder complieOutputStringBuilder = new StringBuilder();
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            complieOutputStringBuilder.append(line);
         }
-                System.out.
+        System.out.println(complieOutputStringBuilder);
 
-println(complieOutputStringBuilder);
-
-BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
-StringBuilder errorComplieOutputStringBuilder = new StringBuilder();
-String errorLine;
-        while((errorLine =errorBufferedReader.
-
-readLine())!=null){
-        errorComplieOutputStringBuilder.
-
-append(errorLine);
+        BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(complileProcess.getInputStream()));
+        StringBuilder errorComplieOutputStringBuilder = new StringBuilder();
+        String errorLine;
+        while ((errorLine = errorBufferedReader.readLine()) != null) {
+            errorComplieOutputStringBuilder.append(errorLine);
         }
-                System.out.
-
-println(errorComplieOutputStringBuilder);
+        System.out.println(errorComplieOutputStringBuilder);
     }
-
-            }catch(IOException |
-InterruptedException e){
-        throw new
-
-RuntimeException(e);
+} catch (IOException | InterruptedException e) {
+    throw new RuntimeException(e);
 }
 ```
 
@@ -1255,22 +1227,15 @@ public class ProcessUtils {
 
 ```java
 // 3.运行程序
-for(String inputArgs :inputList){
-String runCmd = String.format("java -Dfile.encoding=UTF-8 -cp %s Main %s", userCodeParentPath, inputArgs);
-ExecuteMessage executeMessage = null;
-    try{
-executeMessage =ProcessUtils.
-
-runProcessAndGetMessage(runCmd, "运行");
-        System.out.
-
-println(executeMessage);
-    }catch(IOException |
-InterruptedException e){
-        throw new
-
-RuntimeException(e);
-    }
+for (String inputArgs: inputList) {
+    String runCmd = String.format("java -Dfile.encoding=UTF-8 -cp %s Main %s", userCodeParentPath, inputArgs);
+    ExecuteMessage executeMessage = null;
+    try {
+        executeMessage = ProcessUtils.runProcessAndGetMessage(runCmd, "运行");
+        System.out.println(executeMessage);
+    } catch (IOException | InterruptedException e) {
+        throw new RuntimeException(e);
+}
 ```
 
 #### 4.整理输出
@@ -1281,16 +1246,10 @@ RuntimeException(e);
 
 ```java
 StopWatch stopWatch = new StopWatch();
-stopWatch.
-
-start();
-...程序执行
-stopWatch.
-
-stop();
-stopWatch.
-
-getLastTaskTimeMillis(); // 获取时间
+stopWatch.start();
+// ......程序执行
+stopWatch.stop();
+stopWatch.getLastTaskTimeMillis(); // 获取时间
 ```
 
 此处我们使用最大值来统计时间，便于后续判题服务计算程序是否超时：
@@ -1298,25 +1257,17 @@ getLastTaskTimeMillis(); // 获取时间
 ```java
 // 取所有测试用例的最大值
 long maxTime = 0;
-for(
-ExecuteMessage executeMessage :executeMessageList){
-String errorMessage = executeMessage.getErrorMassage();
-    if(StrUtil.
-
-isNotBlank(errorMessage)){
+for (
+    ExecuteMessage executeMessage: executeMessageList) {
+    String errorMessage = executeMessage.getErrorMassage();
+    if (StrUtil.isNotBlank(errorMessage)) {
         break;
-        }
-        if(maxTime <executeMessage.
-
-getTime()){
-maxTime =executeMessage.
-
-getTime();
     }
-            outputList.
-
-add(executeMessage.getMessage());
-        }
+    if (maxTime < executeMessage.getTime()) {
+        maxTime = executeMessage.getTime();
+    }
+    outputList.add(executeMessage.getMessage());
+}
 ```
 
 > 扩展：可以每个测试用例都有一个独立的内存、时间占用的统计
@@ -1325,14 +1276,10 @@ add(executeMessage.getMessage());
 
 ```java
 // 5.文件清理
-if(userCodeFile.getParentFile().
-
-exists()){
-boolean isDel = FileUtil.del(userCodeFile.getParentFile());
-    System.out.
-
-println("删除"+(isDel ?"成功":"失败"));
-        }
+if (userCodeFile.getParentFile().exists()) {
+    boolean isDel = FileUtil.del(userCodeFile.getParentFile());
+    System.out.println("删除" + (isDel ? "成功" : "失败"));
+}
 ```
 
 #### 6.错误处理
@@ -1404,8 +1351,7 @@ public class Main {
 }
 ```
 
-实际运行程序时会发现内存占用到达一定空间后，程序就报错：`java.lang.OutOfMemoryError: Java heap space`
-，而不是无限增加内存占用，直到系统死机。这是 JVM 的一个保护机制。
+实际运行程序时会发现内存占用到达一定空间后，程序就报错：`java.lang.OutOfMemoryError: Java heap space`，而不是无限增加内存占用，直到系统死机。这是 JVM 的一个保护机制。
 
 可以使用 JConsole 工具，连接到 JVM 虚拟机上来可视化查看运行状态。
 
@@ -1473,26 +1419,15 @@ public class Main {
 
 ```java
 // 超时控制:创建一个守护线程，超时后自动中断 Process 实现
-new Thread(() ->{
-        try{
-        Thread.
-
-sleep(TIME_OUT);
-        System.out.
-
-println("超时控制 -> 中断");
-        process.
-
-destroy();
-    }catch(
-InterruptedException e){
-        throw new
-
-RuntimeException(e);
+new Thread(() -> {
+    try {
+        Thread.sleep(TIME_OUT);
+        System.out.println("超时控制 -> 中断");
+        process.destroy();
+    } catch (InterruptedException e) {
+        throw new RuntimeException(e);
     }
-            }).
-
-start();
+}).start();
 ```
 
 #### 2.限制资源分配
@@ -1575,19 +1510,15 @@ private static final List<String> blockList = Arrays.asList("Files", "exec", "ba
 // 校检代码检查屏蔽词
 WordTree wordTree = new WordTree();
 // 加入字典树
-wordTree.
-
-addWords(blockList);
+wordTree.addWords(blockList);
 
 // 获取匹配到的屏蔽词
 FoundWord foundWord = WORD_TREE.matchWord(code);
-if(foundWord !=null){
-        // 输出屏蔽词
-        System.out.
-
-println("包含屏蔽词"+foundWord.getFoundWord());
-        return null;
-        }
+if (foundWord != null) {
+    // 输出屏蔽词
+    System.out.println("包含屏蔽词" + foundWord.getFoundWord());
+    return null;
+}
 ```
 
 ##### 优化点
@@ -1671,7 +1602,7 @@ public class DefaultSecurityManager extends SecurityManager {
 
 ```
 
-3.其他常用权限
+###### 3.其他常用权限
 
 ```java
 package com.starseaoj.starseaojcodesandbox.security;
@@ -1744,8 +1675,7 @@ public class MySecurityManager extends SecurityManager {
 > 注意，windows 用分号间隔多个类路径，linux用冒号。
 
 ```java
-java -Dfile.encoding=UTF-8-cp %s;%s -Djava.security.manager=
-MySecurityManager Main %s
+java -Dfile.encoding=UTF-8-cp %s;%s -Djava.security.manager=MySecurityManager Main %s
 ```
 
 依次执行之前的所有测试用例，发现资源成功被限制，比如读配置文件操作：
@@ -1770,9 +1700,7 @@ MySecurityManager Main %s
 
 3. **性能影响**：启用 `SecurityManager` 会导致一定的性能开销，每次进行受保护的操作时都会触发安全检查，可能一次代码运行就有数十次检查。
 
-4. **弃用警告**：从 Java 17 开始，`SecurityManager`
-   被标记为弃用，计划在未来的版本中移除。因此，尽量避免在新的项目中使用 `SecurityManager`，而是采用其他的安全机制，如基于模块的权限管理（如
-   Java 9 引入的模块系统，可以限制只使用基础包）。
+4. **弃用警告**：从 Java 17 开始，`SecurityManager`被标记为弃用，计划在未来的版本中移除。因此，尽量避免在新的项目中使用 `SecurityManager`，而是采用其他的安全机制，如基于模块的权限管理（如Java 9 引入的模块系统，可以限制只使用基础包）。
 
 #### 5、运行环境隔离
 
@@ -1895,58 +1823,58 @@ public class DockerDemo {
 ##### （1）拉取镜像
 
 ```java
-String image = "nginx:latest";
-PullImageCmd pullImageCmd = dockerClient.pullImageCmd(image);
-PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
-    @Override
-    public void onNext(PullResponseItem item) {
-        System.out.println("下载镜像：" + item.getStatus());
-        super.onNext(item);
+// 创建 Docker 客户端
+DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+// 判断镜像是否存在
+if (!checkImageExists(dockerClient, IMAGE_NAME)) {
+    PullImageCmd pullImageCmd = dockerClient.pullImageCmd(IMAGE_NAME);
+    PullImageResultCallback pullImageResultCallback = new PullImageResultCallback() {
+        @Override
+        public void onNext(PullResponseItem item) {
+            System.out.println("下载镜像：" + item.getStatus());
+            super.onNext(item);
+        }
+    };
+    try {
+        pullImageCmd
+                .exec(pullImageResultCallback)
+                .awaitCompletion();
+    } catch (InterruptedException e) {
+        System.out.println("拉取镜像异常");
+        throw new RuntimeException(e);
     }
-};
-pullImageCmd
-        .
-
-exec(pullImageResultCallback)
-        .
-
-awaitCompletion();
-System.out.
-
-println("下载完成");
+    System.out.println("下载镜像openjdk:8-alpine完成");
+}
 ```
 
 ##### （2）创建容器
 
 ```java
-CreateContainerCmd containerCmd = dockerClient.createContainerCmd(image);
-CreateContainerResponse createContainerResponse = containerCmd
-        .withCmd("echo", "Hello Docker")
-        .exec();
-System.out.
-
-println(createContainerResponse);
+// 创建容器
+CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
+HostConfig hostConfig = new HostConfig();
+hostConfig.withMemory(100 * 1000 * 1000L);
+hostConfig.withMemorySwap(0L);
+hostConfig.withCpuCount(1L);
+String userCodeParentPath = userCodeFile.getParentFile().getAbsolutePath();
+hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
 ```
 
 ##### （3）查看容器状态
 
 ```java
 ListContainersCmd listContainersCmd = dockerClient.listContainersCmd();
-List<Container> containerList = listContainersCmd.withShowAll(true).exec();
-for(
-Container container :containerList){
-        System.out.
-
-println(container);
+List < Container > containerList = listContainersCmd.withShowAll(true).exec();
+for (
+    Container container: containerList) {
+    System.out.println(container);
 }
 ```
 
 ##### （4）启动容器
 
 ```java
-dockerClient.startContainerCmd(containerId).
-
-exec();
+dockerClient.startContainerCmd(containerId).exec();
 ```
 
 ##### （5）查看日志
@@ -1963,39 +1891,25 @@ LogContainerResultCallback logContainerResultCallback = new LogContainerResultCa
 };
 
 // 阻塞等待日志输出
-dockerClient.
-
-logContainerCmd(containerId)
-        .
-
-withStdErr(true)
-        .
-
-withStdOut(true)
-        .
-
-exec(logContainerResultCallback)
-        .
-
-awaitCompletion();
+dockerClient.logContainerCmd(containerId)
+    .withStdErr(true)
+    .withStdOut(true)
+    .exec(logContainerResultCallback)
+    .awaitCompletion();
 ```
 
 ##### （6）删除容器
 
 ```java
-dockerClient.removeContainerCmd(containerId).
-
-withForce(true).
-
-exec();
+dockerClient.removeContainerCmd(containerId)
+    .withForce(true)
+    .exec();
 ```
 
 ##### （7）删除镜像
 
 ```java
-dockerClient.removeImageCmd(image).
-
-exec();
+dockerClient.removeImageCmd(image).exec();
 ```
 
 ### Docker 实现代码沙箱
@@ -2020,7 +1934,7 @@ exec();
 
 7. 错误处理，提升程序健壮性
 
-> 扩展：模板方法设计模式（骨架类），定义同一套实现流程，让不同的子类去负责不同流程中的具体实现。执行步骤一样，每个步骤的实现方式不一样。
+> 扩展：**模板方法设计模式（骨架类）**，定义同一套实现流程，让不同的子类去负责不同流程中的具体实现。执行步骤一样，每个步骤的实现方式不一样。
 
 #### 创建容器，上传编译文件
 
@@ -2045,7 +1959,7 @@ hostConfig.
 setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
 ```
 
-**注意**：容器不可复用，因为每次的挂载目录都不同，且docker 不支持直接修改已经创建的容器的挂载目录。因此只能删除后重新创建容器并挂载目录。
+**注意**：对于**不同的代码而言**，容器**不可复用**，因为每次的**挂载目录都不同**，且**docker 不支持直接修改已经创建的容器的挂载目录**。因此只能删除后重新创建容器并挂载目录。
 
 #### 启动容器，执行代码
 
@@ -2072,9 +1986,7 @@ ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(contain
         .withAttachStdin(true)
         .withAttachStdout(true)
         .exec();
-System.out.
-
-println("创建执行命令："+execCreateCmdResponse);
+System.out.println("创建执行命令："+execCreateCmdResponse);
 ```
 
 执行命令，通过回调接口来获取程序的输出结果，并且通过 StreamType 来区分标准输出和错误输出。
@@ -2095,24 +2007,13 @@ ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() 
         super.onNext(frame);
     }
 };
-try{
-        dockerClient.
-
-execStartCmd(execId)
-            .
-
-exec(execStartResultCallback)
-            .
-
-awaitCompletion();
-}catch(
-InterruptedException e){
-        System.out.
-
-println("程序执行异常");
-    throw new
-
-RuntimeException(e);
+try {
+    dockerClient.execStartCmd(execId)
+        .exec(execStartResultCallback)
+        .awaitCompletion();
+} catch (InterruptedException e) {
+    System.out.println("程序执行异常");
+    throw new RuntimeException(e);
 }
 ```
 
@@ -2123,36 +2024,18 @@ RuntimeException(e);
 和 Java 原生一样，使用 StopWatch 在执行前后统计时间。
 
 ```java
-StopWatch stopWatch = new StopWatch();  // 计时
-long time = 0L;
-try{
-        stopWatch.
-
-start();
-    dockerClient.
-
-execStartCmd(execId)
-        .
-
-exec(execStartResultCallback)
-        .
-
-awaitCompletion();
-    stopWatch.
-
-stop();
-
-time =stopWatch.
-
-getLastTaskTimeMillis();
-}catch(
-InterruptedException e){
-        System.out.
-
-println("程序执行异常");
-    throw new
-
-RuntimeException(e);
+StopWatch stopWatch = new StopWatch(); // 计时
+long time = 0 L;
+try {
+    stopWatch.start();
+    dockerClient.execStartCmd(execId)
+        .exec(execStartResultCallback)
+        .awaitCompletion();
+    stopWatch.stop();
+    time = stopWatch.getLastTaskTimeMillis();
+} catch (InterruptedException e) {
+    System.out.println("程序执行异常");
+    throw newRuntimeException(e);
 }
 ```
 
@@ -2191,9 +2074,7 @@ ResultCallback<Statistics> statisticsResultCallback = statsCmd.exec(new ResultCa
     public void onComplete() {
     }
 });
-statsCmd.
-
-exec(statisticsResultCallback);
+statsCmd.exec(statisticsResultCallback);
 ```
 
 注意，程序执行完后要关闭统计命令：
@@ -2210,12 +2091,8 @@ statsCmd.close()
 
 ```java
 dockerClient.execStartCmd(execId)
-    .
-
-exec(execStartResultCallback)
-    .
-
-awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);  // 设置超时时间
+    .exec(execStartResultCallback)
+    .awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS); // 设置超时时间
 ```
 
 但是，这种方式无论超时与否，容器都会往下执行，无法判断代码运行是否超时。
@@ -2255,27 +2132,19 @@ ExecStartResultCallback execStartResultCallback = new ExecStartResultCallback() 
 // 创建容器
 CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
 HostConfig hostConfig = new HostConfig();
-hostConfig.
-
-withMemory(100*1000*1000L);
-hostConfig.
-
-withMemorySwap(0L);
-hostConfig.
-
-withCpuCount(1L);
-hostConfig.
-
-setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
+hostConfig.withMemory(100 * 1000 * 1000 L);
+hostConfig.withMemorySwap(0 L);
+hostConfig.withCpuCount(1 L);
+hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app"))); // 文件路径映射
 
 CreateContainerResponse createContainerResponse = containerCmd
-        .withName(CONTAINER_NAME)    // 设置容器名称
-        .withHostConfig(hostConfig)
-        .withAttachStdin(true)  // 与本地终端连接
-        .withAttachStderr(true)
-        .withAttachStdout(true)
-        .withTty(true)  // 创建交互终端
-        .exec();
+    .withName(CONTAINER_NAME) // 设置容器名称
+    .withHostConfig(hostConfig)
+    .withAttachStdin(true) // 与本地终端连接
+    .withAttachStderr(true)
+    .withAttachStdout(true)
+    .withTty(true) // 创建交互终端
+    .exec();
 ```
 
 #### 网络资源
@@ -2953,40 +2822,40 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 在外层即父模块的 pom.xml 中引入公共依赖：
 
 ```xml
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+<!--https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 <dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-lang3</artifactId>
+	<groupId>org.apache.commons</groupId>
+	<artifactId>commons-lang3</artifactId>
 </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+<!--https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 <dependency>
-<groupId>com.google.code.gson</groupId>
-<artifactId>gson</artifactId>
-<version>2.9.1</version>
+	<groupId>com.google.code.gson</groupId>
+	<artifactId>gson</artifactId>
+	<version>2.9.1</version>
 </dependency>
-        <!-- https://github.com/alibaba/easyexcel -->
+<!--https://github.com/alibaba/easyexcel -->
 <dependency>
-<groupId>com.alibaba</groupId>
-<artifactId>easyexcel</artifactId>
-<version>3.1.1</version>
+	<groupId>com.alibaba</groupId>
+	<artifactId>easyexcel</artifactId>
+	<version>3.1.1</version>
 </dependency>
-        <!-- https://hutool.cn/docs/index.html#/-->
+<!--https://hutool.cn/docs/index.html#/-->
 <dependency>
-<groupId>cn.hutool</groupId>
-<artifactId>hutool-all</artifactId>
-<version>5.8.8</version>
+	<groupId>cn.hutool</groupId>
+	<artifactId>hutool-all</artifactId>
+	<version>5.8.8</version>
 </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+<!--https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
 <dependency>
-<groupId>org.apache.commons</groupId>
-<artifactId>commons-collections4</artifactId>
-<version>4.4</version>
+	<groupId>org.apache.commons</groupId>
+	<artifactId>commons-collections4</artifactId>
+	<version>4.4</version>
 </dependency>
-        <!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
+<!--https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
 <dependency>
-<groupId>com.baomidou</groupId>
-<artifactId>mybatis-plus-boot-starter</artifactId>
-<version>3.5.2</version>
+	<groupId>com.baomidou</groupId>
+	<artifactId>mybatis-plus-boot-starter</artifactId>
+	<version>3.5.2</version>
 </dependency>
 ```
 
@@ -2997,7 +2866,6 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 引入common模块依赖：
 
 ```xml
-
 <dependencies>
     <dependency>
         <groupId>com.starseaoj</groupId>
@@ -3016,7 +2884,6 @@ docker run -d --name nacos -e MODE=standalone -p 8848:8848 -p 9848:9848 -p 9849:
 openfeign需要添加版本：
 
 ```xml
-
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-openfeign</artifactId>
@@ -3029,21 +2896,20 @@ openfeign需要添加版本：
 给三个业务服务模块（user、question、judge）和网关引入公共依赖：
 
 ```xml
-
 <dependency>
-    <groupId>com.starseaoj</groupId>
-    <artifactId>starseaoj_backend_common</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+	<groupId>com.starseaoj</groupId>
+	<artifactId>starseaoj_backend_common</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 </dependency>
 <dependency>
-<groupId>com.starseaoj</groupId>
-<artifactId>starseaoj_backend_model</artifactId>
-<version>0.0.1-SNAPSHOT</version>
+	<groupId>com.starseaoj</groupId>
+	<artifactId>starseaoj_backend_model</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 </dependency>
 <dependency>
-<groupId>com.starseaoj</groupId>
-<artifactId>starseaoj_backend_service_client</artifactId>
-<version>0.0.1-SNAPSHOT</version>
+	<groupId>com.starseaoj</groupId>
+	<artifactId>starseaoj_backend_service_client</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -3117,7 +2983,6 @@ codesandbox:
 启动类修改注解：
 
 ```java
-
 @SpringBootApplication
 @MapperScan("com.starseaoj.questionservice.mapper")
 @EnableScheduling
@@ -3412,11 +3277,9 @@ server:
 @ComponentScan("com.starseaoj")
 @EnableDiscoveryClient
 public class StarseaojBackendGatewayApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(StarseaojBackendGatewayApplication.class, args);
     }
-
 }
 ```
 
@@ -3436,8 +3299,6 @@ public class StarseaojBackendGatewayApplication {
 knife4j:
   enable: true
 ```
-
-
 
 2.网关模块引入依赖，并添加配置。
 
@@ -3463,8 +3324,6 @@ knife4j:
       version: swagger2
 ```
 
-
-
 3.启动三个服务模块和网关模块，访问http://localhost:8101/doc.html，可以便捷的进行各个模块的切换。
 
 ![image-20240903111405957](assets/image-20240903111405957.png)
@@ -3489,15 +3348,15 @@ server:
 引入spring data redis 依赖：
 
 ```xml
-    <!-- redis -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-data-redis</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.session</groupId>
-        <artifactId>spring-session-data-redis</artifactId>
-    </dependency>
+<!-- redis -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.session</groupId>
+    <artifactId>spring-session-data-redis</artifactId>
+</dependency>
 ```
 
 添加path: /api 解决 cookie 跨路径问题：
@@ -3521,7 +3380,6 @@ server:
 // 跨域配置
 @Configuration
 public class CorsConfig {
-
     // 定义一个Bean，返回一个处理跨域请求的过滤器
     @Bean
     public CorsWebFilter corsFilter() {
@@ -3558,7 +3416,6 @@ public class CorsConfig {
 // 全局过滤器，用于在请求进入服务网关时进行权限检查
 @Component
 public class GlobalAuthFilter implements GlobalFilter, Ordered {
-
     // 使用AntPathMatcher来匹配请求路径，它支持Ant风格的路径匹配
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
@@ -3585,15 +3442,12 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
             // 将DataBuffer写入响应并返回，结束请求处理
             return response.writeWith(Mono.just(dataBuffer));
         }
-
         // 如果路径不匹配"/**/inner/**"，则继续处理请求
         return chain.filter(exchange);
     }
 
     /**
      * 设为最高优先级
-     *
-     * @return
      */
     @Override
     public int getOrder() {
@@ -3720,7 +3574,6 @@ public class InitRabbitMQ {
 ```java
 @Component
 public class MyMessageProducer {
-
     @Resource
     private RabbitTemplate rabbitTemplate;
 
@@ -3737,7 +3590,6 @@ public class MyMessageProducer {
 @Component
 @Slf4j
 public class MyMessageConsumer {
-
     // 指定程序监听的消息队列和确认机制
     @SneakyThrows
     @RabbitListener(queues = {"code_queue"}, ackMode = "MANUAL")
@@ -3768,7 +3620,6 @@ myMessageProducer.sendMessage("code_exchange", "my_routingKey", String.valueOf(q
 @Component
 @Slf4j
 public class MyMessageConsumer {
-
     // 用于消息处理中的业务逻辑
     @Resource
     private JudgeService judgeService;
@@ -3868,7 +3719,7 @@ public class MyMessageConsumer {
 
 #### 前端项目
 
-1.npm run build打包生成dist文件夹。
+使用npm run build命令打包项目生成dist文件夹。
 
 ![image-20240907172350146](assets/image-20240907172350146.png)
 
@@ -3973,7 +3824,11 @@ ps. 在本地电脑时两个都可以正确识别，且默认为 /
 
 ![Snipaste_2024-08-12_02-02-11](assets/Snipaste_2024-08-12_02-02-11.png)
 
-查阅资料后，在任意一个配置类上添加@EnableAsync开启异步功能，并在doJudge方法上添加@Async注解。再次提交代码后发现成功进入doJudge方法，放行断点后发现抛出异常，分析异常信息可知问题出现在76行左右，定位到代码的更改判题部分。逐行查看代码、以及根据日志中的sql语句的id、表中的id比对，发现是72行的questionId出错，应该为questionSubmitId。
+查阅资料后，在任意一个配置类上添加@EnableAsync开启异步功能，并在doJudge方法上添加@Async注解。
+
+再次提交代码后发现成功进入doJudge方法，放行断点后发现抛出异常，分析异常信息可知问题出现在76行左右，定位到代码的更改判题部分。
+
+逐行查看代码、以及根据日志中的sql语句的id、表中的id比对，发现是72行的questionId出错，应该为questionSubmitId。
 
 ![Snipaste_2024-08-12_02-08-48](assets/Snipaste_2024-08-12_02-08-48.png)
 
@@ -4024,30 +3879,20 @@ javac -encoding utf-8 -source 1.8 -target 1.8  MySecurityManager.java
 // 创建容器
 CreateContainerCmd containerCmd = dockerClient.createContainerCmd(IMAGE_NAME);
 HostConfig hostConfig = new HostConfig();
-hostConfig.
-
-withMemory(100*1000*1000L);
-hostConfig.
-
-withCpuCount(1L);
-hostConfig.
-
-setBinds(new Bind(userCodeParentPath, new Volume("/app")));  // 文件路径映射
+hostConfig.withMemory(100 * 1000 * 1000 L);
+hostConfig.withCpuCount(1 L);
+hostConfig.setBinds(new Bind(userCodeParentPath, new Volume("/app"))); // 文件路径映射
 
 CreateContainerResponse createContainerResponse = containerCmd
-        .withName(CONTAINER_NAME)    // 设置容器名称
-        .withHostConfig(hostConfig)
-        .withAttachStdin(true)  // 与本地终端连接
-        .withAttachStderr(true)
-        .withAttachStdout(true)
-        .withTty(true)  // 创建交互终端
-        .exec();
+    .withName(CONTAINER_NAME) // 设置容器名称
+    .withHostConfig(hostConfig)
+    .withAttachStdin(true) // 与本地终端连接
+    .withAttachStderr(true)
+    .withAttachStdout(true)
+    .withTty(true) // 创建交互终端
+    .exec();
 // 启动容器
-dockerClient.
-
-startContainerCmd(CONTAINER_NAME).
-
-exec();
+dockerClient.startContainerCmd(CONTAINER_NAME).exec();
 ```
 
 分析：观测代码发现创建容器中的文件路径映射部分有问题，因为每次带代码路径userCodeParentPath都不同，而挂载目录永远都是第一次的。
@@ -4058,15 +3903,11 @@ exec();
 // 判断容器是否存在
 // 注意容器不可复用，因为每次的挂载目录都不同，且docker 不支持直接修改已经创建的容器的挂载目录。
 // 因此只能删除后重新创建容器并挂载目录。
-if(checkContainerExists(dockerClient, CONTAINER_NAME)){
-        // 先停止并删除旧容器
-        dockerClient.
-
-removeContainerCmd(CONTAINER_NAME).
-
-withForce(true).
-
-exec();
+if (checkContainerExists(dockerClient, CONTAINER_NAME)) {
+    // 先停止并删除旧容器
+    dockerClient.removeContainerCmd(CONTAINER_NAME)
+        .withForce(true)
+        .exec();
 }
 ```
 
@@ -4079,10 +3920,19 @@ exec();
 分析：查阅SpringBoot文档及相关资料后得知：默认SpringBoot会加载classpath:application.yml、classpath:
 config/application.yml等路径下的配置文件，但是上述规则子模块之间会相互覆盖，最终只有一个application.yml配置文件生效。
 
-优先级：1.按文件类型：properties> yml> yaml。 2.按路径：项目所在目录的config目录下>项目所在目录目录下>
-classpath的/config目录>classpath的根目录。3. 外部命令设定（jar包外的参数 > jar包内的配置）
+优先级：
 
-因此解决方法有：1.将另一个子模块的application.properties改为application.yml。2.将user_service子模块中的application.yml放到resource/config目录下。3.设置idea启动类，直接配置端口。
+1. 按文件类型：properties> yml> yaml。
+
+2. 按路径：项目所在目录的config目录下>项目所在目录目录下>classpath的/config目录>classpath的根目录。
+
+3. 外部命令设定（jar包外的参数 > jar包内的配置）
+
+因此解决方法有：
+
+1. 将另一个子模块的application.properties改为application.yml。
+2. 将user_service子模块中的application.yml放到resource/config目录下。
+3. 设置idea启动类，直接配置端口。
 
 第二种方法会影响其他子模块，第三种比较麻烦且和项目本身无关，因此选择第一种。
 
@@ -4134,7 +3984,7 @@ spring:
 ```
 
 
-注意到包名为com.guiyi.starseaoj，并不是微服务改造后的项目包名，那么应该是redis缓存残留，清空redis缓存后即正常。
+注意到末尾包名为com.guiyi.starseaoj，并不是微服务改造后的项目包名，那么应该是redis缓存残留，清空redis缓存后即正常。
 
 
 ### 13.微服务改造项目后登录信息无法互通
@@ -4175,7 +4025,7 @@ rabbitmq-plugins enable rabbitmq_management
 
 使用SHOW  table STATUS LIKE 'question'命令查看发现并未修改，还是很大的值。
 
-查阅许多资料后发现还需要使用ANALYSE命令重新分析表，使得修改生效。
+查阅许多资料后发现还需要使用**ANALYSE命令**重新分析表，使得修改生效。
 
 ```sql
 alter table question AUTO_INCREMENT = 10;
@@ -4262,9 +4112,9 @@ spring:
 
 那么只能查一下对应的8101端口和8104端口了。
 
-发现 还真是后台有残留进程，将其关闭后nacos多出来的那两个nacos实例就没有了。
+发现还真是后台有残留进程，将其关闭后nacos多出来的那两个nacos实例就没有了。
 
-后续发现补充：大概率是因为之前移动打包的jar包时不小心双击启动了（系统没有任何启动显示）
+**后续发现补充**：大概率是因为之前移动打包的jar包时不小心双击启动了（系统没有任何启动显示）
 
 ```bash
 netstat -ano | findstr 8101	# 查看端口占用情况
